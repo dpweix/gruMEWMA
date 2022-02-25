@@ -1,0 +1,19 @@
+Package: mlmcusum
+Title: Detects Changes in Covariance for Multivariate TS
+Version: 0.0.0.9000
+Authors@R: 
+    person("Derek", "Weix", , "derek_weix1@baylor.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+Imports:
+	purrr,
+	ks,
+	MultivariateRandomForest,
+	reticulate,
+	tibble,
+	dplyr
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
