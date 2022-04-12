@@ -28,10 +28,10 @@ trn_id <- 1:1000
 tst_id <- (1000-l+1):2000
 
 
-model_gru <- train_gruMCUSUM(dat[trn_id, ], lags = l, k = .9)
+model_gru <- train_gruMCUSUM(dat[trn_id, ], lags = l, k = 1.1)
 preds_gru <- predict_gruMCUSUM(model_gru, dat[tst_id, ])
 
-model_mrf <- train_mrfMCUSUM(dat[trn_id, ], lags = l, k = .9)
+model_mrf <- train_mrfMCUSUM(dat[trn_id, ], lags = l, k = 1.1)
 preds_mrf <- predict_mrfMCUSUM(model_mrf, dat[tst_id, ])
 
 h_gru <- quantile(model_gru$pstat, .99)
@@ -64,13 +64,15 @@ plot(model_mrf$pstat)
 plot(preds_mrf$pstat)
 
 plot(c(model_gru$pstat, preds_gru$pstat),
-     ylab = "gruMCUSUM", main = paste("Plotting Statistic:", fault))
+     ylab = "gruMCUSUM", main = paste("Plotting Statistic:", fault),
+     ylim = c(0, 20))
 abline(v = 1000, col = "blue")
 abline(v = 1500, col = "red")
 abline(h = h_gru, col = "purple")
 
 plot(c(model_mrf$pstat, preds_mrf$pstat),
-     ylab = "mrfMCUSUM", main = paste("Plotting Statistic:", fault))
+     ylab = "mrfMCUSUM", main = paste("Plotting Statistic:", fault),
+     ylim = c(0, 60))
 abline(v = 1000, col = "blue")
 abline(v = 1500, col = "red")
 abline(h = h_mrf, col = "purple")

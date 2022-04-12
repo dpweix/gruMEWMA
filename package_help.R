@@ -3,8 +3,8 @@
 
 #devtools::create("mlmcusum")
 
-devtools::document("mlmcusum")
-devtools::install("mlmcusum")
+devtools::document("~/git/mlmcusum")
+devtools::install("~/git/mlmcusum")
 
 library("mlmcusum")
 
