@@ -16,7 +16,7 @@ id_trn <- 1:n_ic
 id_tst <- (n_ic+1):(n_ic+n_oc)
 
 # Gen Data
-dat_lin <- gen_dat_lin(n_ic, n_oc)
+dat_lin <- gen_dat_nlr(n_ic, n_oc)
 
 # Test Methods
 # GRU

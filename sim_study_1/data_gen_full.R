@@ -34,3 +34,7 @@ plots <-
 # View All or Select
 # plots
 plots$`Linear None`
+plots$`Non-Linear None`
+plots$`Non-Linear Fault 1`
+plots$`Non-Linear Fault 2`
+plots$`Non-Linear Fault 3`
