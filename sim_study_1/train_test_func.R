@@ -4,7 +4,9 @@ theme_set(theme_bw())
 library("reticulate")
 library("mlmcusum")
 
-use_condaenv("/home/ubuntu/miniconda3/envs/deep-learning-03")
+#path_conda <- "/home/ubuntu/miniconda3/envs/deep-learning-03"
+path_conda <- "/home/nossimid/miniconda3/envs/deep_learning_v03"
+use_condaenv(path_conda)
 path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
 source_python(path_py)
 
