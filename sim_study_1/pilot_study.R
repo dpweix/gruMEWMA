@@ -413,7 +413,7 @@ gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
          mutate(Data = as_factor(Data), method = as_factor(method)))
 }
 
-# Run Simulation
+### Run Single Simulation
 sim_tst <- gen_sim_study()
 
 sim_tst$dat_pstat |> 
@@ -434,3 +434,19 @@ sim_tst$dat_pstat |>
 # ARL Table
 sim_tst$dat_rl
 
+### Multiple Simulations
+n_sim <- 5
+
+sim_vals <- 1:n_sim |> 
+  map(\(i) gen_sim_study())
+
+# ARL Table
+sim_vals |>
+  map(\(i) i$dat_rl) |> 
+  bind_rows() |> 
+  group_by(Data, method) |> 
+  summarise(across(where(is.numeric), mean))
+
+# Pstat Plot Table
+sim_vals |> 
+  map(\(i) i$dat_pstat) 
