@@ -6,7 +6,9 @@ library("reticulate")
 library("mlmcusum")
 library("kableExtra")
 
-use_condaenv("/home/ubuntu/miniconda3/envs/deep-learning-03")
+#path_conda <- "/home/ubuntu/miniconda3/envs/deep-learning-03"
+path_conda <- "/home/nossimid/miniconda3/envs/deep_learning_v03"
+use_condaenv(path_conda)
 path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
 source_python(path_py)
 
@@ -426,26 +428,54 @@ n_categories <- nlevels(sim_tst$dat_pstat$method)*nlevels(sim_tst$dat_pstat$Data
 sim_tst$dat_pstat |> 
   mutate(index = rep(1:(n()/n_categories), n_categories)) |> 
   pivot_longer(-c(index, Data, method)) |> 
-  mutate(method = as_factor(method)) |> 
+  mutate(method = as_factor(method), 
+         name = as_factor(name)) |> 
   ggplot(aes(index, value, color = name)) +
   geom_line() +
-  facet_grid(Data ~ method)
+  geom_vline(xintercept = 500, color = "blue") +
+  geom_vline(xintercept = 1000, color = "red") +
+  facet_grid(Data ~ method) +
+  ylim(0, 30) +
+  labs(y = "Plotting Statistic", color = "",
+       title = "Single Sample of Plotting Statistic for Each Method")
+
+
 
 # ARL Table
 sim_tst$dat_rl
 
 ### Multiple Simulations
-n_sim <- 5
+library("furrr")
+library("parallel")
+
+detectCores()
+
+# Run Simulation
+n_sim <- 70
 
 sim_vals <- 1:n_sim |> 
   map(\(i) gen_sim_study())
+
+save(sim_vals, file = "sim_vals_04.rda")
+
+# Load Save Simulations
+load("sim_vals_01.rda")
+sim_vals_1 <- sim_vals
+load("sim_vals_02.rda")
+sim_vals_2 <- sim_vals
+load("sim_vals_03.rda")
+sim_vals_3 <- sim_vals
+
+sim_vals <- c(sim_vals_1, sim_vals_2, sim_vals_3)
 
 # ARL Table
 sim_vals |>
   map(\(i) i$dat_rl) |> 
   bind_rows() |> 
   group_by(Data, method) |> 
-  summarise(across(where(is.numeric), mean))
+  summarise(across(where(is.numeric), mean)) |> 
+  mutate(across(where(is.numeric), round, 3)) |> 
+  kbl(format = "latex", booktabs = TRUE)
 
 # Pstat Plot Table
 sim_vals |> 
