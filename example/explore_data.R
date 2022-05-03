@@ -32,3 +32,4 @@ dat[-c(1:20), ] |>
   geom_line() +
   facet_wrap(~ name, ncol = 1, scales = "free") +
   labs(x = "", y = "")
+
