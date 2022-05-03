@@ -5,6 +5,7 @@ theme_set(theme_bw())
 library("reticulate")
 library("mlmcusum")
 library("kableExtra")
+library("furrr")
 
 #path_conda <- "/home/ubuntu/miniconda3/envs/deep-learning-03"
 path_conda <- "/home/nossimid/miniconda3/envs/deep_learning_v03"
@@ -16,15 +17,15 @@ source_python(path_py)
 
 # Parameters
 # Method: GRU, data linear (first past)
-gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
-                          l = 2, arl = 40) {
+gen_sim_study <- function(n_ic= 500, n_oc = 500,
+                          l = 4, arl = 200, h_vals) {
   # Constants
-  id_trn <- 1:n_ic_trn
-  id_tst <- (n_ic_trn - l):(n_ic_trn+n_ic_tst+n_oc) # adjust l for varma and htsquare
+  id_trn <- 1:n_ic
+  id_tst <- (n_ic - l):(n_ic+n_oc) # adjust l for varma and htsquare
   ql <- 1 - 1/arl
   
   ### Linear Data ###
-  dat_lin <- gen_dat_lin(n_ic_trn + n_ic_tst, n_oc)
+  dat_lin <- gen_dat_lin(n_ic, n_oc)
   
   # Fit Models
   fit_gru_lin <- train(dat_lin$none[id_trn, ], method = "gruMCUSUM", lags = l, k = 1.1)
@@ -64,11 +65,11 @@ gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
   pred_hts_lin_f3 <- predict(fit_hts_lin, dat_lin$f3[id_tst, ])
   
   # Get h Level
-  h_gru_lin <- quantile(pred_gru_lin_nf$pstat[(l+1):n_ic_tst], ql)
-  h_mrf_lin <- quantile(pred_mrf_lin_nf$pstat[(l+1):n_ic_tst], ql)
-  h_vmc_lin <- quantile(pred_vmc_lin_nf$pstat[(l+1):n_ic_tst], ql)
-  h_vmw_lin <- quantile(pred_vmw_lin_nf$pstat[(l+1):n_ic_tst], ql)
-  h_hts_lin <- quantile(pred_hts_lin_nf$pstat[(l+1):n_ic_tst], ql)
+  h_gru_lin <- h_vals[1]
+  h_mrf_lin <- h_vals[2]
+  h_vmc_lin <- h_vals[3]
+  h_vmw_lin <- h_vals[4]
+  h_hts_lin <- h_vals[5]
   
   # Get Run Length: GRU
   rl_gru_lin_nf <- get_run_length(tail(pred_gru_lin_nf$pstat, n_oc), h_gru_lin)
@@ -143,7 +144,7 @@ gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
                           F3 = c(fit_hts_lin$pstat, pred_hts_lin_f3$pstat))
   
   ### Non-Linear Data ###
-  dat_nlr <- gen_dat_nlr(n_ic_trn + n_ic_tst, n_oc)
+  dat_nlr <- gen_dat_nlr(n_ic, n_oc)
   
   # Fit Models
   fit_gru_nlr <- train(dat_nlr$none[id_trn, ], method = "gruMCUSUM", lags = l, k = 1.1)
@@ -183,11 +184,11 @@ gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
   pred_hts_nlr_f3 <- predict(fit_hts_nlr, dat_nlr$f3[id_tst, ])
   
   # Get h Level
-  h_gru_nlr <- quantile(pred_gru_nlr_nf$pstat[(l+1):n_ic_tst], ql)
-  h_mrf_nlr <- quantile(pred_mrf_nlr_nf$pstat[(l+1):n_ic_tst], ql)
-  h_vmc_nlr <- quantile(pred_vmc_nlr_nf$pstat[(l+1):n_ic_tst], ql)
-  h_vmw_nlr <- quantile(pred_vmw_nlr_nf$pstat[(l+1):n_ic_tst], ql)
-  h_hts_nlr <- quantile(pred_hts_nlr_nf$pstat[(l+1):n_ic_tst], ql)
+  h_gru_nlr <- h_vals[6]
+  h_mrf_nlr <- h_vals[7]
+  h_vmc_nlr <- h_vals[8]
+  h_vmw_nlr <- h_vals[9]
+  h_hts_nlr <- h_vals[10]
   
   # Get Run Length: GRU
   rl_gru_nlr_nf <- get_run_length(tail(pred_gru_nlr_nf$pstat, n_oc), h_gru_nlr)
@@ -262,7 +263,7 @@ gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
                           F3 = c(fit_hts_nlr$pstat, pred_hts_nlr_f3$pstat))
   
   ### Long-Term Data ###
-  dat_ltm <- gen_dat_ltm(n_ic_trn + n_ic_tst, n_oc)
+  dat_ltm <- gen_dat_ltm(n_ic, n_oc)
   
   # Fit Models
   fit_gru_ltm <- train(dat_ltm$none[id_trn, ], method = "gruMCUSUM", lags = l, k = 1.1)
@@ -302,11 +303,11 @@ gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
   pred_hts_ltm_f3 <- predict(fit_hts_ltm, dat_ltm$f3[id_tst, ])
   
   # Get h Level
-  h_gru_ltm <- quantile(pred_gru_ltm_nf$pstat[(l+1):n_ic_tst], ql)
-  h_mrf_ltm <- quantile(pred_mrf_ltm_nf$pstat[(l+1):n_ic_tst], ql)
-  h_vmc_ltm <- quantile(pred_vmc_ltm_nf$pstat[(l+1):n_ic_tst], ql)
-  h_vmw_ltm <- quantile(pred_vmw_ltm_nf$pstat[(l+1):n_ic_tst], ql)
-  h_hts_ltm <- quantile(pred_hts_ltm_nf$pstat[(l+1):n_ic_tst], ql)
+  h_gru_ltm <- h_vals[11]
+  h_mrf_ltm <- h_vals[12]
+  h_vmc_ltm <- h_vals[13]
+  h_vmw_ltm <- h_vals[14]
+  h_hts_ltm <- h_vals[15]
   
   # Get Run Length: GRU
   rl_gru_ltm_nf <- get_run_length(tail(pred_gru_ltm_nf$pstat, n_oc), h_gru_ltm)
@@ -415,8 +416,13 @@ gen_sim_study <- function(n_ic_trn = 500, n_ic_tst = 500, n_oc = 500,
          mutate(Data = as_factor(Data), method = as_factor(method)))
 }
 
+### Load Control Limits
+load(here("results", "h.rda"))
+
 ### Run Single Simulation
-sim_tst <- gen_sim_study()
+sim_tst <- gen_sim_study(n_ic = 1000,
+                         n_oc = 1000, 
+                         h_vals = pull(dat_h, h))
 
 sim_tst$dat_pstat |> 
   group_by(method) |> 
@@ -445,28 +451,17 @@ sim_tst$dat_pstat |>
 sim_tst$dat_rl
 
 ### Multiple Simulations
-library("furrr")
-library("parallel")
-
-detectCores()
-
-# Run Simulation
-n_sim <- 70
+future::plan(multisession)
+n_sim <- 100
 
 sim_vals <- 1:n_sim |> 
-  map(\(i) gen_sim_study())
+  map(\(i) gen_sim_study(n_ic = 1000,
+                                n_oc = 1000, 
+                                h_vals = pull(dat_h, h)))
 
-save(sim_vals, file = "sim_vals_04.rda")
+future::plan(sequential)
 
-# Load Save Simulations
-load("sim_vals_01.rda")
-sim_vals_1 <- sim_vals
-load("sim_vals_02.rda")
-sim_vals_2 <- sim_vals
-load("sim_vals_03.rda")
-sim_vals_3 <- sim_vals
-
-sim_vals <- c(sim_vals_1, sim_vals_2, sim_vals_3)
+save(sim_vals, file = here("results", "sim_vals.rda"))
 
 # ARL Table
 sim_vals |>

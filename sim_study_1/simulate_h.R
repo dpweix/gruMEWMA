@@ -7,7 +7,7 @@ library("mlmcusum")
 library("furrr")
 library("kableExtra")
 
-use_condaenv("/home/ubuntu/miniconda3/envs/deep-learning-03")
+use_condaenv("/home/nossimid/miniconda3/envs/deep_learning_v03")
 path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
 source_python(path_py)
 
@@ -162,17 +162,24 @@ sim_h <- function(n_ic_trn = 500, n_ic_tst = 500, l = 4, arl = 200) {
 sim_tst <- sim_h(n_ic_trn = 400, n_ic_tst = 400)
 
 ### Multiple Simulations
-future::plan(multicore)
-n_sim <- 5
+future::plan(multisession)
+n_sim <- 100
 
 sim_vals <- 1:n_sim |> 
-  map(\(i) sim_h(n_ic_trn = 400, n_ic_tst = 400))
+  future_map(\(i) sim_h(n_ic_trn = 1000, n_ic_tst = 2000))
 
 future::plan(sequential)
 
 # h Value Table
-sim_vals |>
+dat_h <- sim_vals |>
   map(\(i) i$h_vals) |> 
   bind_rows() |> 
   group_by(Data, method) |> 
   summarise(across(where(is.numeric), mean))
+
+# Save Results
+save(dat_h, file = here("results", "h.rda"))
+
+dat_h |> 
+  mutate(h = round(h, 1)) |> 
+  kbl(format = "latex", booktabs = TRUE)
