@@ -5,7 +5,8 @@ library("reticulate")
 library("mlmcusum")
 
 #path_conda <- "/home/ubuntu/miniconda3/envs/deep-learning-03"
-path_conda <- "/home/nossimid/miniconda3/envs/deep_learning_v03"
+path_conda <- "/home/ubuntu/miniconda3/envs/deep-learning-03"
+#Sys.setenv(RETICULATE_PYTHON = paste0(path_conda, "/bin/python"))
 use_condaenv(path_conda)
 path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
 source_python(path_py)
