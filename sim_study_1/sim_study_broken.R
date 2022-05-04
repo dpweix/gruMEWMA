@@ -73,7 +73,7 @@ sim_h_brk <- function(data_type = "lin", n_ic_trn = 500, n_ic_tst = 500, l = 2, 
 
 ### Get ARL -------------------------------------------------------------------
 gen_sim_study_brk <- function(data_type = "lin", n_ic = 500, n_oc = 500,
-                              l = 2, arl = 200, h_vals) {
+                              l = 2, arl = 200, h_vals, ic_arl_first = TRUE) {
   # Constants
   id_trn <- 1:n_ic
   id_tst <- (n_ic - l):(n_ic+n_oc) # adjust l for varma and htsquare
@@ -130,31 +130,41 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic = 500, n_oc = 500,
   h_hts <- h_vals[5]
   
   # Get Run Length: GRU
-  rl_gru_nf <- get_first_fault(tail(pred_gru_nf$pstat, n_oc), h_gru)
+  rl_gru_nf <- ifelse(ic_arl_first,
+                      get_first_fault(tail(pred_gru_nf$pstat, n_oc), h_gru),
+                      get_run_length(tail(pred_gru_nf$pstat, n_oc), h_gru))
   rl_gru_f1 <- get_first_fault(tail(pred_gru_f1$pstat, n_oc), h_gru)
   rl_gru_f2 <- get_first_fault(tail(pred_gru_f2$pstat, n_oc), h_gru)
   rl_gru_f3 <- get_first_fault(tail(pred_gru_f3$pstat, n_oc), h_gru)
   
   # Get Run Length: MRF
-  rl_mrf_nf <- get_first_fault(tail(pred_mrf_nf$pstat, n_oc), h_mrf)
+  rl_mrf_nf <- ifelse(ic_arl_first,
+                      get_first_fault(tail(pred_mrf_nf$pstat, n_oc), h_mrf),
+                      get_run_length( tail(pred_mrf_nf$pstat, n_oc), h_mrf))
   rl_mrf_f1 <- get_first_fault(tail(pred_mrf_f1$pstat, n_oc), h_mrf)
   rl_mrf_f2 <- get_first_fault(tail(pred_mrf_f2$pstat, n_oc), h_mrf)
   rl_mrf_f3 <- get_first_fault(tail(pred_mrf_f3$pstat, n_oc), h_mrf)
   
   # Get Run Length: VARMA - MCUSUM
-  rl_vmc_nf <- get_first_fault(tail(pred_vmc_nf$pstat, n_oc), h_vmc)
+  rl_vmc_nf <- ifelse(ic_arl_first,
+                      get_first_fault(tail(pred_vmc_nf$pstat, n_oc), h_vmc),
+                      get_run_length( tail(pred_vmc_nf$pstat, n_oc), h_vmc))
   rl_vmc_f1 <- get_first_fault(tail(pred_vmc_f1$pstat, n_oc), h_vmc)
   rl_vmc_f2 <- get_first_fault(tail(pred_vmc_f2$pstat, n_oc), h_vmc)
   rl_vmc_f3 <- get_first_fault(tail(pred_vmc_f3$pstat, n_oc), h_vmc)
   
   # Get Run Length: VARMA - MEWMA
-  rl_vmw_nf <- get_first_fault(tail(pred_vmw_nf$pstat, n_oc), h_vmw)
+  rl_vmw_nf <- ifelse(ic_arl_first,
+                      get_first_fault(tail(pred_vmw_nf$pstat, n_oc), h_vmw),
+                      get_run_length( tail(pred_vmw_nf$pstat, n_oc), h_vmw))
   rl_vmw_f1 <- get_first_fault(tail(pred_vmw_f1$pstat, n_oc), h_vmw)
   rl_vmw_f2 <- get_first_fault(tail(pred_vmw_f2$pstat, n_oc), h_vmw)
   rl_vmw_f3 <- get_first_fault(tail(pred_vmw_f3$pstat, n_oc), h_vmw)
   
   # Get Run Length: Hotelling's T^2
-  rl_hts_nf <- get_first_fault(tail(pred_hts_nf$pstat, n_oc), h_hts)
+  rl_hts_nf <- ifelse(ic_arl_first,
+                      get_first_fault(tail(pred_hts_nf$pstat, n_oc), h_hts),
+                      get_run_length( tail(pred_hts_nf$pstat, n_oc), h_hts))
   rl_hts_f1 <- get_first_fault(tail(pred_hts_f1$pstat, n_oc), h_hts)
   rl_hts_f2 <- get_first_fault(tail(pred_hts_f2$pstat, n_oc), h_hts)
   rl_hts_f3 <- get_first_fault(tail(pred_hts_f3$pstat, n_oc), h_hts)
@@ -245,11 +255,11 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic = 500, n_oc = 500,
 # # ARL Table
 # sim_tst$dat_rl
 
-### Apply Method --------------------------------------------------------------
+### Linear Application --------------------------------------------------------
+n_sim <- 100
+
 
 ### h values
-n_sim <- 3
-
 h_sim_lin <- 1:n_sim |> 
   map(\(i) {
     sim_h_brk(data_type = "lin", arl = 200, n_ic_trn = 1000, n_ic_tst = 20000)
@@ -263,20 +273,31 @@ h_val_lin <-
   group_by(Data, method) |> 
   summarise(across(where(is.numeric), mean))
 
-saveRDS(h_val_lin, file = here("results", "h_sim_lin_01.rds"))
+saveRDS(h_val_lin, file = here("results", "h_sim_lin_03.rds"))
 
 ### ARLs
-n_sim <- 3
+# Read in simulated h vaules
+h_val_lin <- readRDS(here("results", "h_sim_lin_03.rds"))
 
-# Linear
-h_val_lin <- readRDS(here("results", "h_sim_lin_01.rds"))
-
+# Run/Save simulation
 sim_vals_lin <- 1:n_sim |> 
   map(\(i) {
     gen_sim_study_brk(data_type = "lin", arl = 200, h_vals = h_val_lin$h,
-                      n_ic = 1000, n_oc = 1000)
+                      n_ic = 1000, n_oc = 20000, ic_arl_first = FALSE)
   })
 
+ saveRDS(sim_vals_lin, file = here("results", "sim_vals_lin_04.rds"))
+
+# View ARL table
+sim_vals_lin |> 
+  map(\(x) x$dat_rl) |> 
+  bind_rows() |> 
+  group_by(method) |> 
+  summarise(across(where(is.numeric), mean, na.rm = TRUE)) |> 
+  mutate(across(where(is.numeric), round, 2)) |> 
+  kbl(format = "latex", booktabs = TRUE)
+
+# View Plotting Statistics
 sim_vals_lin[[1]]$dat_pstat |>
   mutate(index = rep(2:2000, 5)) |> 
   pivot_longer(c(IC, F1, F2, F3)) |> 
