@@ -86,20 +86,73 @@ fit <- list(gruMCUSUM = fit_gru,
 
 saveRDS(fit, here("example", "fitted_models.rds"))
 
+
+
+### Apply Methods -------------------------------------------------------------
+fit <- loadRDS(here("example", "fitted_models.rds"))
+
 # Predict Testing Data
 pred_tst <- map(fit,
-  \(x) {
-    predict(x, dat_tst)
-  })
+                \(x) {
+                  predict(x, dat_tst)
+                })
 
+# Determine Control Limits
+arl_ic <- 200
+ql <- 1 - 1/arl_ic
+
+# Get h values
+h_lim <- pred_tst |> 
+  map(\(x) {
+    quantile(x$pstat, ql)
+  })
 
 # Predict Application Data
 pred_app <- map(fit,
-  \(x) {
-    predict(x, dat_app)
+                \(x) {
+                  predict(x, dat_app)
+                })
+
+### Visualize Pstat -----------------------------------------------------------
+
+# Combine Results from Fit and Prediction
+pstat <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM", "varMEWMA") |> 
+  map(\(x) {
+    bind_rows(fit[[x]]$pstat |> as_tibble(),
+              pred_tst[[x]]$pstat |> as_tibble(),
+              pred_app[[x]]$pstat |> as_tibble()) |> 
+      mutate(Date_Time = pull(dat, Date_Time) |> tail(n()))
   })
 
-### Apply Methods -------------------------------------------------------------
+names(pstat) <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM", "varMEWMA")
+
+# y limits for each graph
+y_lims <-
+  map2(pstat, c(.6, .5, .65, .7), \(x, q) {
+    quantile(x$value, q)
+  })
+
+# Plot pstat from GRU, MRF, and VAR
+pstat_plots <- 1:length(pstat) |> 
+  map(\(i) {
+    pstat[[i]] |> 
+      ggplot(aes(Date_Time, value)) +
+      geom_line() +
+      geom_vline(xintercept = end_trn, color = "blue") +
+      geom_vline(xintercept = end_tst, color = "red") +
+      geom_hline(yintercept = h_lim[[i]], color = "darkgreen") +
+      labs(x = "", y = "Plotting Statistic",
+           title = names(pstat)[i]) +
+      lims(y = c(0, y_lims[[i]]))
+  })
+
+# Save Plots
+1:length(pstat) |> 
+  walk(\(i) {
+    ggsave(filename = paste0("~/git/reports/gruMCUSUM_paper/pstat-", names(pstat)[i], ".png"),
+           plot = pstat_plots[[i]], width = 30, height = 10, units = "cm")
+  })
+
 
 ### Visualize ACF ------------------------------------------------------------
 
@@ -198,35 +251,3 @@ res_plots <- 1:length(res) |>
            plot = res_plots[[i]], width = 30, height = 10, units = "cm")
   })
 
-### Visualize Pstat -----------------------------------------------------------
-
-# Combine Results from Fit and Prediction
-pstat <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM", "varMEWMA") |> 
-  map(\(x) {
-    bind_rows(fit[[x]]$pstat |> as_tibble(),
-              pred_tst[[x]]$pstat |> as_tibble(),
-              pred_app[[x]]$pstat |> as_tibble()) |> 
-      mutate(Date_Time = pull(dat, Date_Time) |> tail(n()))
-  })
-
-names(pstat) <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM", "varMEWMA")
-
-# Plot pstat from GRU, MRF, and VAR
-pstat_plots <- 1:length(pstat) |> 
-  map(\(i) {
-    pstat[[i]] |> 
-      ggplot(aes(Date_Time, value)) +
-      geom_line() +
-      geom_vline(xintercept = end_trn, color = "blue") +
-      geom_vline(xintercept = end_tst, color = "red") +
-      labs(x = "", y = "Plotting Statistic",
-           title = names(pstat)[i]) +
-      lims(y = c(0, 10000))
-  })
-
-# Save Plots
-1:length(pstat) |> 
-  walk(\(i) {
-    ggsave(filename = paste0("~/git/reports/gruMCUSUM_paper/pstat-", names(pstat)[i], ".png"),
-           plot = pstat_plots[[i]], width = 30, height = 10, units = "cm")
-  })
