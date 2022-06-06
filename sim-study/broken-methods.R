@@ -23,7 +23,7 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
   
   ### Gen Data ###
   if(data_type == "lin")      dat <- gen_dat_lin(n_ic_mod + n_ic_h, n_oc)
-  else if(data_type == "nlr") dat <- gen_dat_nrl(n_ic_mod + n_ic_h, n_oc)
+  else if(data_type == "nlr") dat <- gen_dat_nlr(n_ic_mod + n_ic_h, n_oc)
   else if(data_type == "ltm") dat <- gen_dat_ltm(n_ic_mod + n_ic_h, n_oc)
   
   
