@@ -4,7 +4,7 @@ library("dplyr")
 
 # Parameters for study
 n_cores   <- parallel::detectCores()
-data_type <- "nlr"
+data_type <- "ltl"
 n_sim     <- 5
 l         <- 2
 arl       <- 200
@@ -45,6 +45,32 @@ saveRDS(arl_val, file = here("results", paste0("arl-sim-", data_type, ".rds")))
 ### Make latex tables ---------------------------------------------------------
 library("kableExtra")
 
-`arl-sim-ltm` |> 
-  mutate(across(where(is.numeric), round, 3)) |> 
-  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '\\addlinespace'))
+### All ARL Tables
+
+# Tibble of Methods
+methods <-`arl-sim-lin`$method |> 
+  str_split("-") |> 
+  map_dfr(\(x) {
+    tibble(Method = x[1], `$r$` = x[2])
+  })
+
+# Tibble of ARLs
+arls <- list(`arl-sim-lin`, `arl-sim-ltl`, `arl-sim-nlr`, `arl-sim-ltm`) |> 
+  map(\(x) {
+    transmute(x, across(where(is.numeric), round, 2)) |> 
+      set_names(c("$ARL_0$", "$ARL_{F1}$", "$ARL_{F2}$", "$ARL_{F3}$"))
+  }) |> 
+  bind_cols(.name_repair = "minimal")
+
+### Combine into LaTeX table ###
+# Linear Data
+bind_cols(methods, arls[, 1:8], .name_repair = "minimal") |> 
+  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '\\addlinespace'),
+      escape = FALSE) |> 
+  add_header_above(c(" " = 2, "Linear Short-Term" = 4, "Linear Long-Term" = 4))
+
+# Non-Linear Data
+bind_cols(methods, arls[, 9:16], .name_repair = "minimal") |> 
+  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '\\addlinespace'),
+      escape = FALSE) |> 
+  add_header_above(c(" " = 2, "Non-Linear Short-Term" = 4, "Non-Linear Long-Term" = 4))

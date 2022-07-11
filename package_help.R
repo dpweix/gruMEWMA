@@ -9,3 +9,4 @@ devtools::install("~/git/mlmcusum")
 library("mlmcusum")
 
 ?create_X
+
