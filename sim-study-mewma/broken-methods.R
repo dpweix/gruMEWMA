@@ -30,7 +30,7 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
   # Choice of Methods
   methods <- 
     expand.grid(
-      c("gruMEWMA", "varmaMEWMA"), # methods
+      c("gruMEWMA", "mrfMEWMA", "varmaMEWMA"), # methods
       c(.3,.5,.7) # choice of r (or k for MCUSUM)
     ) |> 
     as_tibble() |> 
