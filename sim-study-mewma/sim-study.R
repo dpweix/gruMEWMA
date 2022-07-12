@@ -4,8 +4,8 @@ library("dplyr")
 
 # Parameters for study
 n_cores   <- parallel::detectCores()
-data_type <- "lin"
-n_sim     <- 5
+data_type <- "ltm" #lin, ltl, nlr, ltm
+n_sim     <- 7
 l         <- 2
 arl       <- 200
 n_ic_mod  <- 10000
@@ -13,7 +13,8 @@ n_ic_h    <- 10000
 n_oc      <- 20000
 
 # Seed
-set.seed(1) # lin
+set.seed(1) # lin, ltl, 
+set.seed(2) # nlr, ltm
 
 ### ARL Simulation ------------------------------------------------------------
 
