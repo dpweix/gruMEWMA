@@ -2,6 +2,7 @@
 library("here")
 library("tidyverse")
 theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5, size = 15))
 library("reticulate")
 library("mlmcusum")
 
@@ -38,8 +39,8 @@ plots <-
            geom_line() +
            geom_vline(xintercept = 1000, color = "red") +
            labs(title = x, color = "", y = "", x = "") +
-           theme(legend.position = "top")
-         #guides(color = "none")
+           theme(legend.position = "top") +
+           guides(color = "none")
          
        }) |> 
   set_names(titles)
@@ -53,7 +54,12 @@ dat_lin$none |>
   geom_line() +
   geom_vline(xintercept = 1000, color = "red") +
   labs(title = x, color = "", y = "", x = "") +
-  theme(legend.position = "top")
+  theme(legend.position = "top") +  
+  scale_color_discrete(labels=c("x1"=expression(x[1]),
+                                "x2"=expression(x[2]),
+                                "x3"=expression(x[3]))) #+
+  scale_fill_discrete(guide="none")+
+  guides(color=guide_legend(override.aes=list(fill=c("#F8766D","#00BFC4"))))
 
 
 # View All or Select

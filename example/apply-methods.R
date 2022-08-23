@@ -1,5 +1,6 @@
 library("tidyverse")
 theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5, size = 20))
 library("here")
 library("lubridate")
 library("mlmcusum")
@@ -23,14 +24,14 @@ var_monitored <- c("Cell 1 Flux (LMH)", "Cell 2 Flux (LMH)",
                    "Perm. Cond. 1 (mS/cm)", "Perm. Cond. 2 (mS/cm)")
 
 # Data Split
-end_trn <- ymd_hms("2020-11-01 04:00:00")
+end_trn <- ymd_hms("2020-11-01 00:45:00")
 end_tst <- ymd_hms("2020-11-01 08:00:00")
 
 # Time Series Plot
 dat |> 
   pivot_longer(all_of(var_monitored)) |> 
   ggplot(aes(Date_Time, value)) +
-  geom_point(shape = 1) +
+  geom_line() + #geom_point(shape = 1) +
   geom_vline(xintercept = end_trn, color = "blue") +
   geom_vline(xintercept = end_tst, color = "red") +
   facet_wrap(~ name, ncol = 1, scales = "free") +
@@ -38,6 +39,19 @@ dat |>
 
 ggsave("/home/ubuntu/git/reports/gruMCUSUM_paper/example-data.png",
        width = 25, height = 20, units = "cm")
+
+# Time Series Plot Cell 1 and Perm Cond. 1
+dat |> 
+  pivot_longer(c("Cell 1 Flux (LMH)", "Perm. Cond. 1 (mS/cm)")) |> 
+  ggplot(aes(Date_Time, value)) +
+  geom_line() + #geom_point(shape = 1) +
+  geom_vline(xintercept = end_trn, color = "blue") +
+  geom_vline(xintercept = end_tst, color = "red") +
+  facet_wrap(~ name, ncol = 1, scales = "free") +
+  labs(x = "", y = "")
+
+ggsave("/home/ubuntu/git/reports/ppp-presentation/example-data-1.png",
+       width = 25, height = 10, units = "cm")
 
 # Count by Set
 dat |> filter(Date_Time <= end_trn) |> nrow() # Training
@@ -52,99 +66,144 @@ dat |> filter(Date_Time >= end_tst) |> nrow() # Application
 
 # Constants
 sec_btw_obs <- 3
-l <- 2
-method_types <- c("gru_MCUSUM", "mrf_MCUSUM", "var_MCUSUM", "var_MEWMA", "htsquare")
-method_const <- c(1.1         , 5           , 1.1         , 0.3        , 0)
+# method_types <- c("gruMEWMA" , "mrfMEWMA"  , "varmaMEWMA", "htsquare")
+# method_const <- c(0.3         , 0.3          , 0.3          , 0)
+# method_l     <- c(4           , 2            , 1            , 1)
+method_types <- c("gruMEWMA" , "varmaMEWMA", "htsquare")
+method_const <- c(0.7         , 0.7          , 0)
+method_l     <- c(4           , 1            , 1)
 
 # Model Training Data
-dat_trn <- dat |> 
+dat_trn_mod <- dat |> 
   filter(Date_Time <= end_trn) |> 
   select(all_of(var_monitored)) 
 
-# Method Testing Data
-dat_tst <- dat |> 
+# h Estimating Data
+dat_trn_h <- dat |> 
   filter(Date_Time >= end_trn,
          Date_Time <= end_tst) |> 
   select(all_of(var_monitored)) 
 
-# Method Application Data
-dat_app <- dat |> 
+# Method Testing Data
+dat_tst <- dat |> 
   filter(Date_Time >= end_tst) |> 
   select(all_of(var_monitored))
 
-# Fit Models
-fit_gru <- train(dat_trn, method = "gruMCUSUM", lags = l, k = 1.1)
-fit_mrf <- train(tail(dat_trn, 1000), method = "mrfMCUSUM", lags = 2, k = 5) # removed data for memory purposes
-fit_vmc <- train(dat_trn, method = "varMCUSUM", lags = 1, k = 1.1)
-fit_vmw <- train(dat_trn, method = "varMEWMA", lags = 1, r = 0.3)
+# Train Models
+fit <-
+  pmap(list(method_types, method_const, method_l), 
+       \(method, r, l) {
+         train(dat_trn_mod, method = method, lags = l, r = r)
+  }) |> 
+  set_names(method_types)
 
-# All fitted models
-fit <- list(gruMCUSUM = fit_gru, 
-            mrfMCUSUM = fit_mrf, 
-            varMCUSUM = fit_vmc, 
-            varMEWMA = fit_vmw)
+# Attempt to train MRF
+# fit_mrf <- train(dat_trn_h, method = "mrfMEWMA", lags = 2)
 
-saveRDS(fit, here("example", "fitted_models.rds"))
+# fit_gru <- train(dat_trn, method = "gruMCUSUM", lags = l, k = 1.1)
+# fit_mrf <- train(tail(dat_trn, 1000), method = "mrfMCUSUM", lags = 2, k = 5) # removed data for memory purposes
+# fit_vmc <- train(dat_trn, method = "varMCUSUM", lags = 1, k = 1.1)
+# fit_vmw <- train(dat_trn, method = "varMEWMA", lags = 1, r = 0.3)
+# 
+# # All fitted models
+# fit <- list(gruMCUSUM = fit_gru, 
+#             mrfMCUSUM = fit_mrf, 
+#             varMCUSUM = fit_vmc, 
+#             varMEWMA = fit_vmw)
+
+# Doesn't work for gru methods
+saveRDS(fit, here("example", "fitted-models.rds"))
 
 
 
 ### Apply Methods -------------------------------------------------------------
-fit <- loadRDS(here("example", "fitted_models.rds"))
+fit <- readRDS(here("example", "fitted_models.rds"))
 
 # Predict Testing Data
-pred_tst <- map(fit,
-                \(x) {
-                  predict(x, dat_tst)
-                })
+pred_trn_h <- map(fit,
+                  \(x) {
+                    predict(x, dat_trn_h)
+                  })
 
 # Determine Control Limits
 arl_ic <- 200
 ql <- 1 - 1/arl_ic
 
 # Get h values
-h_lim <- pred_tst |> 
+h <- pred_trn_h |> 
   map(\(x) {
     quantile(x$pstat, ql)
   })
 
 # Predict Application Data
-pred_app <- map(fit,
+pred_tst <- map(fit,
                 \(x) {
-                  predict(x, dat_app)
+                  predict(x, dat_tst)
                 })
+
+# Get location of first flag
+flags <- 1:3 |> 
+  map(\(x) {
+    which(pred_tst[[x]]$pstat > h[[x]]) |> 
+      as.numeric()
+  }) |> 
+  set_names(method_types)
+
+flags
+
+diff(flags$gruMEWMA)
+diff(flags$varmaMEWMA)
+diff(flags$htsquare)
+
+flags$gruMEWMA[5]
+flags$varmaMEWMA[7]
+flags$htsquare[7]
 
 ### Visualize Pstat -----------------------------------------------------------
 
 # Combine Results from Fit and Prediction
-pstat <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM", "varMEWMA") |> 
+pstat <- names(pred_tst) |> 
   map(\(x) {
     bind_rows(fit[[x]]$pstat |> as_tibble(),
-              pred_tst[[x]]$pstat |> as_tibble(),
-              pred_app[[x]]$pstat |> as_tibble()) |> 
+              pred_trn_h[[x]]$pstat |> as_tibble(),
+              pred_tst[[x]]$pstat |> as_tibble()) |> 
       mutate(Date_Time = pull(dat, Date_Time) |> tail(n()))
-  })
-
-names(pstat) <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM", "varMEWMA")
+  }) |> 
+  set_names(names(pred_tst))
 
 # y limits for each graph
 y_lims <-
-  map2(pstat, c(.6, .5, .65, .7), \(x, q) {
+  map2(pstat, c(.95, .9, .99), \(x, q) {
     quantile(x$value, q)
   })
 
-# Plot pstat from GRU, MRF, and VAR
-pstat_plots <- 1:length(pstat) |> 
+# Plot Control Statistic
+pstat_plots <- 1:2 |> 
   map(\(i) {
     pstat[[i]] |> 
+      mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
       ggplot(aes(Date_Time, value)) +
-      geom_line() +
+      geom_point(shape = 1, alpha = .1) +
+      geom_line(aes(y = smoothed)) +
       geom_vline(xintercept = end_trn, color = "blue") +
       geom_vline(xintercept = end_tst, color = "red") +
-      geom_hline(yintercept = h_lim[[i]], color = "darkgreen") +
+      geom_hline(yintercept = h[[i]], color = "darkgreen") +
       labs(x = "", y = "Plotting Statistic",
            title = names(pstat)[i]) +
       lims(y = c(0, y_lims[[i]]))
   })
+
+pstat_plots[[3]] <- pstat[[3]] |> 
+  mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
+  ggplot(aes(Date_Time, value)) +
+  geom_point(shape = 1, alpha = .1) +
+  geom_line(aes(y = smoothed)) +
+  geom_vline(xintercept = end_trn, color = "blue") +
+  geom_vline(xintercept = end_tst, color = "red") +
+  geom_hline(yintercept = h[[3]], color = "darkgreen") +
+  labs(x = "", y = "Plotting Statistic",
+       title = expression("Hotelling's" ~ T^2)) +
+  lims(y = c(0, y_lims[[3]]))
 
 # Save Plots
 1:length(pstat) |> 
@@ -153,25 +212,88 @@ pstat_plots <- 1:length(pstat) |>
            plot = pstat_plots[[i]], width = 30, height = 10, units = "cm")
   })
 
+### Scatter Plot ------------------------------------------------------------
+
+# Data for Scatter Plots
+dat_scatter <- dat_trn_mod
+a <- 0.3
+wid <- 13
+hei <- 8
+
+# Cell 1 vs. Cell 2
+dat_scatter |> 
+  ggplot(aes(`Cell 1 Flux (LMH)`, `Cell 2 Flux (LMH)`)) +
+  geom_point(shape = 1, alpha = a) +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggsave(filename = "~/git/reports/gruMCUSUM_paper/example-cell1-cell2.png",
+       width = wid, height = hei, units = "cm")
+
+# Cell 1 vs. Perm Cond 1
+dat_scatter |> 
+  ggplot(aes(`Cell 1 Flux (LMH)`, `Perm. Cond. 1 (mS/cm)`)) +
+  geom_point(shape = 1, alpha = a) +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggsave(filename = "~/git/reports/gruMCUSUM_paper/example-cell1-cond1.png",
+       width = wid, height = hei, units = "cm")
+
+# Cell 1 vs. Perm Cond 2
+dat_scatter |> 
+  ggplot(aes(`Cell 1 Flux (LMH)`, `Perm. Cond. 2 (mS/cm)`)) +
+  geom_point(shape = 1, alpha = a) +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggsave(filename = "~/git/reports/gruMCUSUM_paper/example-cell1-cond2.png",
+       width = wid, height = hei, units = "cm")
+
+# Cell 2 vs. Perm Cond 1
+dat_scatter |> 
+  ggplot(aes(`Cell 2 Flux (LMH)`, `Perm. Cond. 1 (mS/cm)`)) +
+  geom_point(shape = 1, alpha = a) +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggsave(filename = "~/git/reports/gruMCUSUM_paper/example-cell2-cond1.png",
+       width = wid, height = hei, units = "cm")
+
+# Cell 2 vs. Perm Cond 2
+dat_scatter |> 
+  ggplot(aes(`Cell 2 Flux (LMH)`, `Perm. Cond. 2 (mS/cm)`)) +
+  geom_point(shape = 1, alpha = a) +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggsave(filename = "~/git/reports/gruMCUSUM_paper/example-cell2-cond2.png",
+       width = wid, height = hei, units = "cm")
+
+# Perm Cond 1 vs. Perm Cond 2
+dat_scatter |> 
+  ggplot(aes(`Perm. Cond. 1 (mS/cm)`, `Perm. Cond. 2 (mS/cm)`)) +
+  geom_point(shape = 1, alpha = a) +
+  geom_smooth(method = "lm", se = FALSE)
+
+ggsave(filename = "~/git/reports/gruMCUSUM_paper/example-cond1-cond2.png",
+       width = wid, height = hei, units = "cm")
+
 
 ### Visualize ACF ------------------------------------------------------------
 
 ### Testing Data - Raw/Residuals
-res_tst <-
-  c(list(Raw = dat_tst), 
-    map(pred_tst, \(x) as_tibble(x$residuals)))
+res_trn_h <-
+  c(list(Raw = dat_trn_h), 
+    map(pred_trn_h, \(x) as_tibble(x$residuals)))
 
 # ACF Plots
-acf_tst_plots <-
-  1:length(res_tst) |> 
+acf_trn_h_plots <-
+  1:length(res_trn_h) |> 
   map(\(i) {
-    acf_vals <- res_tst[[i]] |>
-      Acf(type = "covariance", plot = FALSE)
+    acf_vals <- res_trn_h[[i]] |>
+      Acf(type = "correlation", plot = FALSE) #Acf(type = "covariance", plot = FALSE)
 
     acf_vals$type <- "correlation"
 
     autoplot(acf_vals) +
-      labs(title = paste0(names(res_tst)[i]))
+      labs(title = paste0(names(res_trn_h)[i])) +
+      lims(y = c(-.1, 1))
     
     # ggAcf(res_tst[[i]], type = "correlation", lag.max = 50) +
     #   lims(y = c(0, 1)) +
@@ -179,10 +301,10 @@ acf_tst_plots <-
   })
 
 # Save Plots
-1:(length(res_tst)-1) |> # -1 will leave out the second var plot 
+1:(length(res_trn_h)) |> # -1 will leave out the second var plot 
   walk(\(i) {
-    ggsave(filename = paste0("~/git/reports/gruMCUSUM_paper/acf-tst-", names(res_tst)[i], ".png"),
-           plot = acf_tst_plots[[i]], width = 30, height = 10, units = "cm")
+    ggsave(filename = paste0("~/git/reports/gruMCUSUM_paper/acf-tst-", names(res_trn_h)[i], ".png"),
+           plot = acf_trn_h_plots[[i]], width = 30, height = 18, units = "cm")
   })
 
 ### Faulty Data - Raw/Residuals
@@ -220,15 +342,15 @@ acf_app_plots <-
 ### Visualize Residuals -------------------------------------------------------
 
 # Combine Results from Fit and Prediction
-res <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM") |> 
+# Combine Results from Fit and Prediction
+res <- names(pred_tst) |> 
   map(\(x) {
     bind_rows(fit[[x]]$residuals |> as_tibble(),
-              pred_tst[[x]]$residuals |> as_tibble(),
-              pred_app[[x]]$residuals |> as_tibble()) |> 
+              pred_trn_h[[x]]$residuals |> as_tibble(),
+              pred_tst[[x]]$residuals |> as_tibble()) |> 
       mutate(Date_Time = pull(dat, Date_Time) |> tail(n()))
-  })
-
-names(res) <- c("gruMCUSUM", "mrfMCUSUM", "varMCUSUM")
+  }) |> 
+  set_names(c("GRU", "VARMA", "Centered Data"))
 
 # Plot Residuals from GRU, MRF, and VAR
 res_plots <- 1:length(res) |> 
@@ -241,7 +363,8 @@ res_plots <- 1:length(res) |>
       geom_vline(xintercept = end_tst, color = "red") +
       facet_wrap(~ name, scales = "free") +
       labs(x = "", y = "Residuals",
-           title = names(res)[i])
+           title = names(res)[i]) +
+      lims(y = c(-3, 6))
   })
 
 # Save Plots
