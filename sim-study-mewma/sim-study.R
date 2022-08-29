@@ -4,13 +4,13 @@ library("dplyr")
 
 # Parameters for study
 n_cores   <- parallel::detectCores()
-data_type <- "ltm" #lin, ltl, nlr, ltm
-n_sim     <- 3
-l         <- 3
+data_type <- "lin" #lin, ltl, nlr, ltm
+n_sim     <- 1000
+l         <- 2
 arl       <- 200
-n_ic_mod  <- 10000
-n_ic_h    <- 10000
-n_oc      <- 20000
+n_ic_mod  <- 1000
+n_ic_h    <- 1000
+n_oc      <- 2000
 
 # Seed
 #set.seed(1) # lin, ltl, 
@@ -18,12 +18,8 @@ n_oc      <- 20000
 
 ### ARL Simulation ------------------------------------------------------------
 
-# 1 - 15, 16 - 30, 31 - 45, 46-60
-start <- 1
-stop <- 15
-
 # Simulate arl_vals
-start:(stop)  |> 
+1:(n_sim)  |> 
   purrr::walk(\(i) {
     part <<- i
     rstudioapi::jobRunScript(path = here("sim-study-mewma", "arl-study.R"), importEnv = TRUE)
@@ -31,16 +27,11 @@ start:(stop)  |>
 
 # Load simulation results and calculate ARLs
 arl_val <- 
-  1:(60) |> 
+  1:(n_sim) |> 
   purrr::map(\(i) {
     
     arl_sim <- readRDS(here("results", paste0("arl-sim-", data_type, "-", i, ".rds")))
-    
-    1:n_sim |> 
-      purrr::map(\(j) {
-        print(arl_sim[[j]]$rl)
-      }) |> 
-      bind_rows()
+    arl_sim$rl
     
   }) |> 
   bind_rows() |> 
