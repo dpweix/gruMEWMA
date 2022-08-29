@@ -4,22 +4,26 @@ library("dplyr")
 
 # Parameters for study
 n_cores   <- parallel::detectCores()
-data_type <- "lin" #lin, ltl, nlr, ltm
-n_sim     <- 7
-l         <- 2
+data_type <- "ltm" #lin, ltl, nlr, ltm
+n_sim     <- 3
+l         <- 3
 arl       <- 200
-n_ic_mod  <- 1000
-n_ic_h    <- 1000
-n_oc      <- 2000
+n_ic_mod  <- 10000
+n_ic_h    <- 10000
+n_oc      <- 20000
 
 # Seed
-set.seed(1) # lin, ltl, 
-set.seed(2) # nlr, ltm
+#set.seed(1) # lin, ltl, 
+#set.seed(2) # nlr, ltm
 
 ### ARL Simulation ------------------------------------------------------------
 
+# 1 - 15, 16 - 30, 31 - 45, 46-60
+start <- 1
+stop <- 15
+
 # Simulate arl_vals
-1:(n_cores-1) |> 
+start:(stop)  |> 
   purrr::walk(\(i) {
     part <<- i
     rstudioapi::jobRunScript(path = here("sim-study-mewma", "arl-study.R"), importEnv = TRUE)
@@ -27,7 +31,7 @@ set.seed(2) # nlr, ltm
 
 # Load simulation results and calculate ARLs
 arl_val <- 
-  1:(n_cores-1) |> 
+  1:(60) |> 
   purrr::map(\(i) {
     
     arl_sim <- readRDS(here("results", paste0("arl-sim-", data_type, "-", i, ".rds")))
@@ -48,6 +52,7 @@ saveRDS(arl_val, file = here("results", paste0("arl-sim-", data_type, ".rds")))
 
 ### Make latex tables ---------------------------------------------------------
 library("kableExtra")
+library("tidyverse")
 
 ### All ARL Tables
 
@@ -69,12 +74,12 @@ arls <- list(`arl-sim-lin`, `arl-sim-ltl`, `arl-sim-nlr`, `arl-sim-ltm`) |>
 ### Combine into LaTeX table ###
 # Linear Data
 bind_cols(methods, arls[, 1:8], .name_repair = "minimal") |> 
-  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '\\addlinespace'),
+  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '', '\\addlinespace'),
       escape = FALSE) |> 
   add_header_above(c(" " = 2, "Linear Short-Term" = 4, "Linear Long-Term" = 4))
 
 # Non-Linear Data
 bind_cols(methods, arls[, 9:16], .name_repair = "minimal") |> 
-  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '\\addlinespace'),
+  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '', '\\addlinespace'),
       escape = FALSE) |> 
   add_header_above(c(" " = 2, "Non-Linear Short-Term" = 4, "Non-Linear Long-Term" = 4))

@@ -30,8 +30,8 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
   # Choice of Methods
   methods <- 
     expand.grid(
-      c("gruMEWMA", "mrfMEWMA", "varmaMEWMA"), # methods
-      c(.3,.5,.7) # choice of r (or k for MCUSUM)
+      c("gruMEWMA", "mrfMEWMA", "varMEWMA", "MEWMA"), # methods
+      c(.2,.4,.6, .8) # choice of r (or k for MCUSUM)
     ) |> 
     as_tibble() |> 
     set_names("method", "r") |> 
@@ -56,7 +56,7 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
   pred_h <- 
     fit |> 
     map(\(x) {
-      predict(x, dat$none[id_trn_h, ])
+      predict_fd(x, dat$none[id_trn_h, ])
     })
   
   # Get h Level
@@ -71,10 +71,10 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
     fit |> 
     map(\(x) {
       list(
-        nf = predict(x, dat$none[id_tst, ]),
-        f1 = predict(x, dat$f1[id_tst, ]),
-        f2 = predict(x, dat$f2[id_tst, ]),
-        f3 = predict(x, dat$f3[id_tst, ])
+        nf = predict_fd(x, dat$none[id_tst, ]),
+        f1 = predict_fd(x, dat$f1[id_tst, ]),
+        f2 = predict_fd(x, dat$f2[id_tst, ]),
+        f3 = predict_fd(x, dat$f3[id_tst, ])
       )
     })
   

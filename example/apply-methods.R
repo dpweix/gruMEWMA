@@ -7,6 +7,7 @@ library("mlmcusum")
 library("forecast")
 library("reticulate")
 library("kableExtra")
+library("zoo")
 
 
 ### Load Data -----------------------------------------------------------------
@@ -66,12 +67,12 @@ dat |> filter(Date_Time >= end_tst) |> nrow() # Application
 
 # Constants
 sec_btw_obs <- 3
-# method_types <- c("gruMEWMA" , "mrfMEWMA"  , "varmaMEWMA", "htsquare")
-# method_const <- c(0.3         , 0.3          , 0.3          , 0)
-# method_l     <- c(4           , 2            , 1            , 1)
-method_types <- c("gruMEWMA" , "varmaMEWMA", "htsquare")
-method_const <- c(0.7         , 0.7          , 0)
-method_l     <- c(4           , 1            , 1)
+method_types <- c("gruMEWMA" , "mrfMEWMA"  , "varMEWMA", "htsquare")
+method_const <- c(0.3         , 0.3          , 0.3          , 0)
+method_l     <- c(4           , 2            , 1            , 1)
+# method_types <- c("gruMEWMA" , "varMEWMA", "htsquare")
+# method_const <- c(0.7         , 0.7          , 0)
+# method_l     <- c(4           , 1            , 1)
 
 # Model Training Data
 dat_trn_mod <- dat |> 
@@ -101,7 +102,7 @@ fit <-
 # fit_mrf <- train(dat_trn_h, method = "mrfMEWMA", lags = 2)
 
 # fit_gru <- train(dat_trn, method = "gruMCUSUM", lags = l, k = 1.1)
-# fit_mrf <- train(tail(dat_trn, 1000), method = "mrfMCUSUM", lags = 2, k = 5) # removed data for memory purposes
+#fit_mrf <- train(tail(dat_trn_mod, 1000), method = "mrfMCUSUM", lags = 2, k = 5) # removed data for memory purposes
 # fit_vmc <- train(dat_trn, method = "varMCUSUM", lags = 1, k = 1.1)
 # fit_vmw <- train(dat_trn, method = "varMEWMA", lags = 1, r = 0.3)
 # 
@@ -122,7 +123,7 @@ fit <- readRDS(here("example", "fitted_models.rds"))
 # Predict Testing Data
 pred_trn_h <- map(fit,
                   \(x) {
-                    predict(x, dat_trn_h)
+                    predict_fd(x, dat_trn_h)
                   })
 
 # Determine Control Limits
@@ -138,7 +139,7 @@ h <- pred_trn_h |>
 # Predict Application Data
 pred_tst <- map(fit,
                 \(x) {
-                  predict(x, dat_tst)
+                  predict_fd(x, dat_tst)
                 })
 
 # Get location of first flag
@@ -171,14 +172,17 @@ pstat <- names(pred_tst) |>
   }) |> 
   set_names(names(pred_tst))
 
+# Save Plotting Statistic
+saveRDS(pstat, here("example", "pstat.rds"))
+
 # y limits for each graph
 y_lims <-
-  map2(pstat, c(.95, .9, .99), \(x, q) {
+  map2(pstat, c(.95, .95, .9, .99), \(x, q) {
     quantile(x$value, q)
   })
 
 # Plot Control Statistic
-pstat_plots <- 1:2 |> 
+pstat_plots <- 1:3 |> 
   map(\(i) {
     pstat[[i]] |> 
       mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
@@ -193,7 +197,7 @@ pstat_plots <- 1:2 |>
       lims(y = c(0, y_lims[[i]]))
   })
 
-pstat_plots[[3]] <- pstat[[3]] |> 
+pstat_plots[[4]] <- pstat[[4]] |> 
   mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
   ggplot(aes(Date_Time, value)) +
   geom_point(shape = 1, alpha = .1) +
@@ -216,6 +220,7 @@ pstat_plots[[3]] <- pstat[[3]] |>
 
 # Data for Scatter Plots
 dat_scatter <- dat_trn_mod
+
 a <- 0.3
 wid <- 13
 hei <- 8
