@@ -8,9 +8,9 @@ data_type <- "lin" #lin, ltl, nlr, ltm
 n_sim     <- 1000
 l         <- 2
 arl       <- 200
-n_ic_mod  <- 1000
-n_ic_h    <- 1000
-n_oc      <- 2000
+n_ic_mod  <- 10000
+n_ic_h    <- 10000
+n_oc      <- 20000
 
 # Seed
 #set.seed(1) # lin, ltl, 
