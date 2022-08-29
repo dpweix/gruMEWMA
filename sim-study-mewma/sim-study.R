@@ -4,7 +4,7 @@ library("dplyr")
 
 # Parameters for study
 n_cores   <- parallel::detectCores()
-data_type <- "ltm" #lin, ltl, nlr, ltm
+data_type <- "lin" #lin, ltl, nlr, ltm
 n_sim     <- 3
 l         <- 3
 arl       <- 200
