@@ -3,7 +3,6 @@ library("here")
 library("dplyr")
 
 # Parameters for study
-n_cores   <- parallel::detectCores()
 data_type <- "lin" #lin, ltl, nlr, ltm
 n_sim     <- 1000
 l         <- 2
@@ -12,17 +11,36 @@ n_ic_mod  <- 10000
 n_ic_h    <- 10000
 n_oc      <- 20000
 
-# Seed
-#set.seed(1) # lin, ltl, 
-#set.seed(2) # nlr, ltm
+# Parameters for application
+n_cores   <- parallel::detectCores()
+max_jobs <- n_cores
+batches  <- ceiling(n_sim/max_jobs)
 
 ### ARL Simulation ------------------------------------------------------------
 
-# Simulate arl_vals
-1:(n_sim)  |> 
-  purrr::walk(\(i) {
-    part <<- i
-    rstudioapi::jobRunScript(path = here("sim-study-mewma", "arl-study.R"), importEnv = TRUE)
+# results folder for chosen data generation method MUST BE EMPTY!!!
+# Organize Batches for Job Submission
+job_tib <-
+  tibble(sim = 1:n_sim,
+         batch = rep(1:batches, each = max_jobs) |> head(n_sim))
+
+# Loop to submit batches of jobs. Only submits new batch once every
+# job in the current batch is completed.
+1:batches |>
+  purrr::walk(\(b) {
+    sims <- filter(job_tib, batch == b)$sim 
+    
+    sims |> 
+      purrr::walk(\(i) {
+        part <<- i
+        rstudioapi::jobRunScript(path = here("sim-study-mewma", "arl-study.R"), importEnv = TRUE)
+      })
+    
+    while(!all(file.exists(here("results", paste0("arl-sim-", data_type, "-", sims, ".rds"))))) {
+      print(paste("Processing Batch:", b))
+      Sys.sleep(60)
+    } 
+
   })
 
 # Load simulation results and calculate ARLs
