@@ -18,10 +18,14 @@ source(here("sim-study-mewma", "broken-methods.R"))
 
 # Simulation
 arl_sim <- 
-  gen_sim_study_brk(data_type = data_type, n_ic_mod = n_ic_mod, n_ic_h = n_ic_h,
-                    n_oc = n_oc, l = l, arl = arl)
+  gen_sim_study_brk(data_type = data_type,
+                    n_ic_mod = n_ic_mod,
+                    n_ic_h = n_ic_h,
+                    n_oc = n_oc,
+                    l = l,
+                    arl = arl)
 
 # Save results
-saveRDS(arl_sim, file = here("results", paste0("arl-sim-", data_type, "-", part, ".rds")))
+saveRDS(arl_sim[2:3], file = here("results", paste0("arl-sim-", data_type, "-", part, ".rds")))
 
 
