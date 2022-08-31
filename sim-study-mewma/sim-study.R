@@ -3,7 +3,7 @@ library("here")
 library("dplyr")
 
 # Parameters for study
-data_type <- "lin" #lin, ltl, nlr, ltm
+data_type <- "ltl" #lin, ltl, nlr, ltm
 n_sim     <- 1000
 l         <- 2
 arl       <- 200
@@ -26,7 +26,7 @@ job_tib <-
 
 # Loop to submit batches of jobs. Only submits new batch once every
 # job in the current batch is completed.
-1:batches |>
+9:batches |>
   purrr::walk(\(b) {
     sims <- filter(job_tib, batch == b)$sim 
     
@@ -46,13 +46,12 @@ job_tib <-
 # Load simulation results and calculate ARLs
 arl_val <- 
   1:(n_sim) |> 
-  purrr::map(\(i) {
+  purrr::map_dfr(\(i) {
     
     arl_sim <- readRDS(here("results", paste0("arl-sim-", data_type, "-", i, ".rds")))
     arl_sim$rl
     
   }) |> 
-  bind_rows() |> 
   group_by(method) |> 
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
@@ -64,6 +63,7 @@ library("kableExtra")
 library("tidyverse")
 
 ### All ARL Tables
+arl_lin <- readRDS(here("results", "arl-sim-lin.rds"))
 
 # Tibble of Methods
 methods <-`arl-sim-lin`$method |> 
@@ -78,7 +78,7 @@ arls <- list(`arl-sim-lin`, `arl-sim-ltl`, `arl-sim-nlr`, `arl-sim-ltm`) |>
     transmute(x, across(where(is.numeric), round, 2)) |> 
       set_names(c("$ARL_0$", "$ARL_{F1}$", "$ARL_{F2}$", "$ARL_{F3}$"))
   }) |> 
-  bind_cols(.name_repair = "minimal")
+  bind_cols(.name_repair = "minimal")``
 
 ### Combine into LaTeX table ###
 # Linear Data
