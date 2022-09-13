@@ -3,13 +3,13 @@ library("here")
 library("tidyverse")
 
 # Parameters for study
-data_type <- "ltl" #lin, ltl, nlr, ltm
+data_type <- "lin" #lin, ltl, nlr, ltm
 n_sim     <- 1000
 l         <- 2
 arl       <- 200
-n_ic_mod  <- 1000
-n_ic_h    <- 1000
-n_oc      <- 2000
+n_ic_mod  <- 10000
+n_ic_h    <- 10000
+n_oc      <- 20000
 
 # Parameters for application
 n_cores   <- parallel::detectCores()
@@ -26,7 +26,7 @@ job_tib <-
 
 # Loop to submit batches of jobs. Only submits new batch once every
 # job in the current batch is completed.
-9:batches |>
+1:batches |>
   purrr::walk(\(b) {
     sims <- filter(job_tib, batch == b)$sim 
     
@@ -60,25 +60,29 @@ saveRDS(arl_val, file = here("results", paste0("arl-sim-", data_type, ".rds")))
 
 ### Make latex tables ---------------------------------------------------------
 library("kableExtra")
+library("here")
 library("tidyverse")
 
-### All ARL Tables
+# All ARL Tables
 arl_lin <- readRDS(here("results", "arl-sim-lin.rds"))
+arl_ltl <- readRDS(here("results", "arl-sim-ltl.rds"))
+arl_nlr <- readRDS(here("results", "arl-sim-nlr.rds"))
+arl_ltm <- readRDS(here("results", "arl-sim-ltm.rds"))
 
 # Tibble of Methods
-methods <-`arl-sim-lin`$method |> 
+methods <- arl_lin$method |> 
   str_split("-") |> 
   map_dfr(\(x) {
     tibble(Method = x[1], `$r$` = x[2])
   })
 
 # Tibble of ARLs
-arls <- list(`arl-sim-lin`, `arl-sim-ltl`, `arl-sim-nlr`, `arl-sim-ltm`) |> 
+arls <- list(arl_lin, arl_ltl, arl_nlr, arl_ltm) |> 
   map(\(x) {
     transmute(x, across(where(is.numeric), round, 2)) |> 
       set_names(c("$ARL_0$", "$ARL_{F1}$", "$ARL_{F2}$", "$ARL_{F3}$"))
   }) |> 
-  bind_cols(.name_repair = "minimal")``
+  bind_cols(.name_repair = "minimal")
 
 ### Combine into LaTeX table ###
 # Linear Data
