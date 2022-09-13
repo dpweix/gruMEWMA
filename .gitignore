@@ -10,3 +10,4 @@ example/fitted_models.rds
 example/pstat.rds
 example/BW30_Navajo_DataAnalysis_Exp1(Take 3)_good.xlsx
 example/bw30_navajo.rda
+example/*.rds
