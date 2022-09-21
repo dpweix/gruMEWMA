@@ -2,7 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-results/*
-figures/*
 data/*.rds
 README_files/
