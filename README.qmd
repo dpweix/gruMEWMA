@@ -1,0 +1,16 @@
+---
+title: "README"
+format: html
+editor: source
+---
+
+## Set Up
+
+The files in 
+
+```{r}
+library("mlmcusum")
+```
+
+## File Descriptions
+
