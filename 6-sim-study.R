@@ -34,7 +34,7 @@ job_tib <-
     sims |> 
       purrr::walk(\(i) {
         part <<- i
-        rstudioapi::jobRunScript(path = here("arl-study.R"), importEnv = TRUE)
+        rstudioapi::jobRunScript(path = here("5-arl-study.R"), importEnv = TRUE)
       })
     
     while(!all(file.exists(here("results", paste0("arl-sim-", data_type, "-", sims, ".rds"))))) {

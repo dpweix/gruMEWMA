@@ -1,4 +1,3 @@
-### Imports ###
 library("here")
 library("tidyverse")
 theme_set(theme_bw())
@@ -10,23 +9,24 @@ library("mlmcusum")
 path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
 source_python(path_py)
 
-### Show Data Used for Sim Study ###
+# Where to save figures
+fig_path <- here("figures/")
 
-# Generate All Data
+# Generate data
 dat_lin <- gen_dat_lin(n_ic = 1000, n_oc = 1000)
 dat_ltl <- gen_dat_ltl(n_ic = 1000, n_oc = 1000)
 dat_nlr <- gen_dat_nlr(n_ic = 1000, n_oc = 1000)
 dat_ltm <- gen_dat_ltm(n_ic = 1000, n_oc = 1000)
 
-# Label Combination of Data and Faults
+# Generate all labels for plots
 titles <- 
-  expand.grid(c("Linear Short-Term:", "Linear Long-Term:",
+  expand.grid(c("Linear Short-Term:"    , "Linear Long-Term:",
                 "Non-Linear Short-Term:", "Non-Linear Long-Term:"),
               c("No Fault", "Fault 1", "Fault 2", "Fault 3")) |> 
   arrange(Var1) |>
   pmap_chr(paste)
 
-# Plot and Save this Combinations
+# Create all plots
 plots <-
   map2(titles, c(dat_lin, dat_ltl, dat_nlr, dat_ltm),
        \(x, y) {
@@ -45,6 +45,7 @@ plots <-
        }) |> 
   set_names(titles)
 
+# Create plot with legend
 x <- titles[[1]]
 
 dat_lin$none |> 
@@ -62,8 +63,7 @@ dat_lin$none |>
   guides(color=guide_legend(override.aes=list(fill=c("#F8766D","#00BFC4"))))
 
 
-# View All or Select
-# plots
+# View each plot (no legend)
 plots$`Linear Short-Term: No Fault`
 plots$`Linear Short-Term: Fault 1`
 plots$`Linear Short-Term: Fault 2`
@@ -84,10 +84,10 @@ plots$`Non-Linear Long-Term: Fault 1`
 plots$`Non-Linear Long-Term: Fault 2`
 plots$`Non-Linear Long-Term: Fault 3`
 
-# Save All Plots
+# Save all plots
 1:length(plots) |> 
   walk(\(n) {
-    ggsave(paste0("/home/ubuntu/git/reports/gruMCUSUM_paper/",
+    ggsave(paste0(fig_path,
                   str_replace_all(titles[[n]], " ", "-") |> str_remove(":"),
                   ".png"),
            plots[[n]], units = "cm", width = 12, height = 8)
