@@ -1,12 +1,9 @@
 ---
-title: "README"
-format: html
-editor: source
+title: "My Project"
+format: gfm
 ---
 
 ## Set Up
-
-The files in 
 
 ```{r}
 library("mlmcusum")
@@ -14,3 +11,4 @@ library("mlmcusum")
 
 ## File Descriptions
 
+## How to use this repository
