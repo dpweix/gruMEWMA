@@ -10,6 +10,8 @@ library("kableExtra")
 library("zoo")
 
 fig_path <- here("figures/")
+fig_path <- "/home/ubuntu/git/reports/gruMCUSUM_paper/"
+fig_path <- "/home/ubuntu/git/reports/weekly-report/report-2022-10-25/"
 
 ### Time series plots ---------------------------------------------------------
 
@@ -93,7 +95,7 @@ h     <- readRDS(here("data", "h.rds"))
 
 # y limits for each graph
 y_lims <-
-  map2(pstat, c(.95, .95, .9, .99), \(x, q) {
+  map2(pstat, c(.99, .99, .99, .99), \(x, q) {
     quantile(x$value, q)
   })
 
@@ -104,7 +106,7 @@ pstat_plots <- 1:3 |>
       mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
       ggplot(aes(Date_Time, value)) +
       geom_point(shape = 1, alpha = .1) +
-      geom_line(aes(y = smoothed)) +
+      geom_line(aes(y = smoothed), color = "coral") +
       geom_vline(xintercept = end_trn, color = "blue") +
       geom_vline(xintercept = end_tst, color = "red") +
       geom_hline(yintercept = h[[i]], color = "darkgreen") +
@@ -117,7 +119,7 @@ pstat_plots[[4]] <- pstat[[4]] |>
   mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
   ggplot(aes(Date_Time, value)) +
   geom_point(shape = 1, alpha = .1) +
-  geom_line(aes(y = smoothed)) +
+  geom_line(aes(y = smoothed), color = "coral") +
   geom_vline(xintercept = end_trn, color = "blue") +
   geom_vline(xintercept = end_tst, color = "red") +
   geom_hline(yintercept = h[[3]], color = "darkgreen") +
@@ -230,5 +232,5 @@ acf_ctl_plots <-
 1:(length(res_ctl)) |> # -1 will leave out the second var plot 
   walk(\(i) {
     ggsave(filename = paste0(fig_path, "acf-ctl-", names(res_ctl)[i], ".png"),
-           plot = acf_ctl_plots[[i]], width = 30, height = 18, units = "cm")
+           plot = acf_ctl_plots[[i]], width = 32, height = 20, units = "cm")
   })

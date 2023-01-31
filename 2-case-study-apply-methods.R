@@ -15,6 +15,7 @@ source_python(path_py)
 
 ### Fit models ----------------------------------------------------------------
 set.seed(3)
+py_set_seed(3)
 
 # Load full data, training data for modeling, training data for estimating
 # the control limit, and testing data
@@ -26,7 +27,7 @@ dat_tst <- readRDS(here("data", "bw30-navajo-tst.rds"))
 # Constants
 sec_btw_obs <- 3
 method_types <- c("gruMEWMA" , "mrfMEWMA"  , "varMEWMA", "htsquare")
-method_const <- c(0.2        , 0.2         , 0.2       , 0)
+method_const <- 2 * c(0.1        , 0.1         , 0.1       , 0)
 method_l     <- c(2          , 2           , 1         , 1) 
 
 # Train models
@@ -81,8 +82,8 @@ diff(flags$mrfMEWMA) |> head(20)
 diff(flags$varMEWMA) |> head(20)
 diff(flags$htsquare) |> head(20)
 
-flags$gruMEWMA[9]
-flags$mrfMEWMA[14]
+flags$gruMEWMA[5]
+flags$mrfMEWMA[6]
 flags$varMEWMA[5]
 flags$htsquare[7]
 
