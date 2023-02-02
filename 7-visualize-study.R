@@ -20,8 +20,8 @@ dat_ltm <- gen_dat_ltm(n_ic = 1000, n_oc = 1000)
 
 # Generate all labels for plots
 titles <- 
-  expand.grid(c("Linear Short-Term:"    , "Linear Long-Term:",
-                "Non-Linear Short-Term:", "Non-Linear Long-Term:"),
+  expand.grid(c("Linear Stationary:"    , "Linear Nonstationary:",
+                "Non-Linear Stationary:", "Non-Linear Nonstationary:"),
               c("No Fault", "Fault 1", "Fault 2", "Fault 3")) |> 
   arrange(Var1) |>
   pmap_chr(paste)
@@ -56,33 +56,33 @@ dat_lin$none |>
   geom_vline(xintercept = 1000, color = "red") +
   labs(title = x, color = "", y = "", x = "") +
   theme(legend.position = "top") +  
-  scale_color_discrete(labels=c("x1"=expression(x[1]),
-                                "x2"=expression(x[2]),
-                                "x3"=expression(x[3]))) #+
+  scale_color_discrete(labels=c("x1"=expression(y[1]),
+                                "x2"=expression(y[2]),
+                                "x3"=expression(y[3]))) +
   scale_fill_discrete(guide="none")+
-  guides(color=guide_legend(override.aes=list(fill=c("#F8766D","#00BFC4"))))
+  guides(color=guide_legend(override.aes=list(fill=c("#F8766D","#00BFC4", "blue"))))
 
 
 # View each plot (no legend)
-plots$`Linear Short-Term: No Fault`
-plots$`Linear Short-Term: Fault 1`
-plots$`Linear Short-Term: Fault 2`
-plots$`Linear Short-Term: Fault 3`
+plots$`Linear Stationary: No Fault`
+plots$`Linear Stationary: Fault 1`
+plots$`Linear Stationary: Fault 2`
+plots$`Linear Stationary: Fault 3`
 
-plots$`Linear Long-Term: No Fault`
-plots$`Linear Long-Term: Fault 1`
-plots$`Linear Long-Term: Fault 2`
-plots$`Linear Long-Term: Fault 3`
+plots$`Linear Nonstationary: No Fault`
+plots$`Linear Nonstationary: Fault 1`
+plots$`Linear Nonstationary: Fault 2`
+plots$`Linear Nonstationary: Fault 3`
 
-plots$`Non-Linear Short-Term: No Fault`
-plots$`Non-Linear Short-Term: Fault 1`
-plots$`Non-Linear Short-Term: Fault 2`
-plots$`Non-Linear Short-Term: Fault 3`
+plots$`Non-Linear Stationary: No Fault`
+plots$`Non-Linear Stationary: Fault 1`
+plots$`Non-Linear Stationary: Fault 2`
+plots$`Non-Linear Stationary: Fault 3`
 
-plots$`Non-Linear Long-Term: No Fault`
-plots$`Non-Linear Long-Term: Fault 1`
-plots$`Non-Linear Long-Term: Fault 2`
-plots$`Non-Linear Long-Term: Fault 3`
+plots$`Non-Linear Nonstationary: No Fault`
+plots$`Non-Linear Nonstationary: Fault 1`
+plots$`Non-Linear Nonstationary: Fault 2`
+plots$`Non-Linear Nonstationary: Fault 3`
 
 # Save all plots
 1:length(plots) |> 
