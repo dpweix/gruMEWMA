@@ -6,11 +6,11 @@ library("reticulate")
 library("kableExtra")
 library("zoo")
 
-# Custom package https://github.com/dpweix/mlmcusum.git
-library("mlmcusum")
+# Custom package https://github.com/dpweix/mlewma.git
+library("mlmewma")
 
 # Load GRU functions
-path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
+path_py <- "~/git/mlmewma/inst/python/gru_functions.py"
 source_python(path_py)
 
 ### Fit models ----------------------------------------------------------------
@@ -34,7 +34,7 @@ method_l     <- c(2          , 2           , 1         , 1)
 fit <-
   pmap(list(method_types, method_const, method_l), 
        \(method, r, l) {
-         train(dat_mod, method = method, lags = l, r = r)
+         train_fd(dat_mod, method = method, lags = l, r = r)
        }) |> 
   set_names(method_types)
 

@@ -3,15 +3,13 @@ theme_set(theme_bw())
 theme_update(plot.title = element_text(hjust = 0.5, size = 20))
 library("here")
 library("lubridate")
-library("mlmcusum")
+library("mlmewma")
 library("forecast")
 library("reticulate")
 library("kableExtra")
 library("zoo")
 
 fig_path <- here("figures/")
-fig_path <- "/home/ubuntu/git/reports/gruMCUSUM_paper/"
-fig_path <- "/home/ubuntu/git/reports/weekly-report/report-2022-10-25/"
 
 ### Time series plots ---------------------------------------------------------
 
