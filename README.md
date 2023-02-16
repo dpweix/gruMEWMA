@@ -7,16 +7,16 @@ The repository is meant as an accompaniment to the paper *Monitoring
 Covariance in Multivariate Time Series: Comparing Machine Learning and
 Statistical Approaches*.
 
-First install the `mlmcusum` package from
-https://github.com/dpweix/mlmcusum.git. The gated recurrent unit (GRU)
-is run using the Tensorflow software in python. This code can be found
-in the downloaded `R` package at
-`mlmcusum/inst/python/gru_functions.py`. Whenever the `path_py` variable
-is included in a file, it is important that the absolute file path is
-provided. Otherwise the python code cannot be found by the package.
+First install the `mlmewma` package from
+https://github.com/dpweix/mlmewma.git. The gated recurrent unit (GRU) is
+run using the Tensorflow software in python. This code can be found in
+the downloaded `R` package at `mlmewma/inst/python/gru_functions.py`.
+Whenever the `path_py` variable is included in a file, it is important
+that the absolute file path is provided. Otherwise the python code
+cannot be found by the package.
 
 Once the path is determined use `source_python` from the `reticulate`
-package to load in all required python functions for the `mlmcusum`
+package to load in all required python functions for the `mlmewma`
 package.
 
 Additionally, these files make use of `here` package to avoid needed
@@ -26,11 +26,11 @@ absolute pathing may be added to each file for a specific user.
 
 ``` r
 library("reticulate")
-# Custom package https://github.com/dpweix/mlmcusum.git
-library("mlmcusum")
+# Custom package https://github.com/dpweix/mlmewma.git
+library("mlmewma")
 
 # Load GRU functions
-path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
+path_py <- "~/git/mlmewma/inst/python/gru_functions.py"
 source_python(path_py)
 ```
 
@@ -105,7 +105,7 @@ Description of files used to recreate results in paper.
 ## How to use this repository
 
 This repository can be used to recreate the results in the paper, or as
-a general guide for how to use the `mlmcusum` package. This package is
+a general guide for how to use the `mlmewma` package. This package is
 meant for use in fault detection on the covariance of multivariate time
 series data, particularly data with non-linear relationships between
 variables.
