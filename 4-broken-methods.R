@@ -1,9 +1,9 @@
 library("here")
 library("tidyverse")
 library("reticulate")
-library("mlmcusum")
+library("mlmewma")
 
-path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
+path_py <- "~/git/mlmewma/inst/python/gru_functions.py"
 source_python(path_py)
 
 ### Get ARL -------------------------------------------------------------------
@@ -42,7 +42,7 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
   fit <-
     methods |> 
     pmap(\(method, r) {
-      train(dat$none[id_trn_mod, ], method = method, lags = l, r = r)
+      train_fd(dat$none[id_trn_mod, ], method = method, lags = l, r = r)
     }) |> 
     set_names(method_names)
   

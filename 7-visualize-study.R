@@ -3,10 +3,10 @@ library("tidyverse")
 theme_set(theme_bw())
 theme_update(plot.title = element_text(hjust = 0.5, size = 15))
 library("reticulate")
-library("mlmcusum")
+library("mlmewma")
 
 # load python
-path_py <- "~/git/mlmcusum/inst/python/gru_functions.py"
+path_py <- "~/git/mlmewma/inst/python/gru_functions.py"
 source_python(path_py)
 
 # Where to save figures
