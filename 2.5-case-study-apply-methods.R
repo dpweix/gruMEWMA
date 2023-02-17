@@ -26,28 +26,34 @@ dat_tst <- readRDS(here("data", "bw30-navajo-tst.rds"))
 
 # Constants
 sec_btw_obs <- 3
-method_types <- c("gruMEWMA" , "mrfMEWMA"  , "varMEWMA", "htsquare")
-method_const <- 2 * c(0.1        , 0.1         , 0.1       , 0)
-method_l     <- c(2          , 2           , 1         , 1) 
+method_types <- c("gruMEWMA" , "mrfMEWMA", "htsquare")
+method_const <- 2 * c(0.1    , 0.1       , 0)
+method_l     <- c(2          , 2         , 1) 
 
 # Train models
 fit <-
   pmap(list(method_types, method_const, method_l), 
        \(method, r, l) {
-         train_fd(dat_mod, method = method, lags = l, r = r)
+         train_fd(data = dat_mod |> select(contains(c("Cell", "Perm"))),
+                  method = method, 
+                  data_exog = dat_mod |> select(contains("Feed")),
+                  lags = l,
+                  r = r)
        }) |> 
   set_names(method_types)
 
 # Predictions for estimating h
 pred_ctl <- map(fit,
                 \(x) {
-                  predict_fd(x, dat_ctl)
+                  predict_fd(x,
+                             dat_ctl |> select(contains(c("Cell", "Perm"))),
+                             select(dat_ctl, contains("Feed")))
                 })
 
 # Predictions on testing data
 pred_tst <- map(fit,
                 \(x) {
-                  predict_fd(x, dat_tst)
+                  predict_fd(x, dat_tst[, 1:4], dat_tst[, 5:6])
                 })
 
 # Combine pstat from all data sets
@@ -88,8 +94,8 @@ flags$varMEWMA[5]
 flags$htsquare[7]
 
 # The GRU model cannot make new predictions when loaded from save
-saveRDS(fit,      here("data", "fit.rds"))
-saveRDS(pred_ctl, here("data", "pred-ctl.rds"))
-saveRDS(pred_tst, here("data", "pred-tst.rds"))
-saveRDS(pstat,    here("data", "pstat.rds"))
-saveRDS(h,        here("data", "h.rds"))
+saveRDS(fit,      here("data", "fit-exog.rds"))
+saveRDS(pred_ctl, here("data", "pred-ctl-exog.rds"))
+saveRDS(pred_tst, here("data", "pred-tst-exog.rds"))
+saveRDS(pstat,    here("data", "pstat-exog.rds"))
+saveRDS(h,        here("data", "h-exog.rds"))
