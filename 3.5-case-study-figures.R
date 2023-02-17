@@ -76,7 +76,7 @@ res_plots <- 1:length(res) |>
       geom_vline(xintercept = end_tst, color = "red") +
       facet_wrap(~ name, scales = "free") +
       labs(x = "", y = "Residuals",
-           title = names(res)[i]) +
+           title = paste(names(res)[i], "w/ Exogenous Variables")) +
       lims(y = c(-3, 6))
   })
 
@@ -109,7 +109,7 @@ pstat_plots <- 1:2 |>
       geom_vline(xintercept = end_tst, color = "red") +
       geom_hline(yintercept = h[[i]], color = "darkgreen") +
       labs(x = "", y = "Plotting Statistic",
-           title = names(pstat)[i]) +
+           title = paste(names(pstat)[i], "w/ Exogenous Variables")) +
       lims(y = c(0, y_lims[[i]]))
   })
 
@@ -128,7 +128,7 @@ pstat_plots[[3]] <- pstat[[3]] |>
 # Save Plots
 1:length(pstat) |> 
   walk(\(i) {
-    ggsave(filename = paste0(fig_path, "pstat-exog", names(pstat)[i], ".png"),
+    ggsave(filename = paste0(fig_path, "pstat-exog-", names(pstat)[i], ".png"),
            plot = pstat_plots[[i]],
            width = 30, height = 10, units = "cm")
   })
@@ -218,7 +218,7 @@ acf_ctl_plots <-
     acf_vals$type <- "correlation"
     
     autoplot(acf_vals) +
-      labs(title = paste0(names(res_ctl)[i])) +
+      labs(title = paste0(names(res_ctl)[i], "w/ Exogenous Variables")) +
       lims(y = c(-.1, 1))
     
     # ggAcf(res_tst[[i]], type = "correlation", lag.max = 50) +
@@ -229,6 +229,6 @@ acf_ctl_plots <-
 # Save Plots
 1:(length(res_ctl)) |> # -1 will leave out the second var plot 
   walk(\(i) {
-    ggsave(filename = paste0(fig_path, "acf-ctl-exog", names(res_ctl)[i], ".png"),
+    ggsave(filename = paste0(fig_path, "acf-ctl-exog-", names(res_ctl)[i], ".png"),
            plot = acf_ctl_plots[[i]], width = 32, height = 20, units = "cm")
   })
