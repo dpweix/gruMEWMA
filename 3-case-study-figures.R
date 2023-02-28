@@ -1,6 +1,9 @@
 library("tidyverse")
 theme_set(theme_bw())
-theme_update(plot.title = element_text(hjust = 0.5, size = 20))
+theme_update(plot.title = element_text(hjust = 0.5, size = 15),
+             plot.subtitle = element_text(hjust = 0.5, size = 10),
+             strip.placement = "outside",
+             strip.background = element_blank())
 library("here")
 library("lubridate")
 library("mlmewma")
@@ -24,13 +27,15 @@ var_monitored <- c("Cell 1 Flux (LMH)", "Cell 2 Flux (LMH)",
 end_trn <- ymd_hms("2020-11-01 00:45:00")
 end_tst <- ymd_hms("2020-11-01 08:00:00")
 
+hr_split <- range(filter(dat, between(Date_Time, end_trn, end_tst))$`Hours Run`)
+
 # Time series plots variables of interest
 dat |> 
   pivot_longer(all_of(var_monitored)) |> 
-  ggplot(aes(Date_Time, value)) +
+  ggplot(aes(`Hours Run`, value)) +
   geom_line() + #geom_point(shape = 1) +
-  geom_vline(xintercept = end_trn, color = "blue") +
-  geom_vline(xintercept = end_tst, color = "red") +
+  geom_vline(xintercept = hr_split[1], color = "blue") +
+  geom_vline(xintercept = hr_split[2], color = "red") +
   facet_wrap(~ name, ncol = 1, scales = "free") +
   labs(x = "", y = "")
 
@@ -40,10 +45,10 @@ ggsave(paste0(fig_path, "example-data.png"),
 # Time series plots cell 1 and perm cond. 1
 dat |> 
   pivot_longer(c("Cell 1 Flux (LMH)", "Perm. Cond. 1 (mS/cm)")) |> 
-  ggplot(aes(Date_Time, value)) +
+  ggplot(aes(`Hours Run`, value)) +
   geom_line() + #geom_point(shape = 1) +
-  geom_vline(xintercept = end_trn, color = "blue") +
-  geom_vline(xintercept = end_tst, color = "red") +
+  geom_vline(xintercept = hr_split[1], color = "blue") +
+  geom_vline(xintercept = hr_split[2], color = "red") +
   facet_wrap(~ name, ncol = 1, scales = "free") +
   labs(x = "", y = "")
 
