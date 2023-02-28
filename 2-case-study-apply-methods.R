@@ -28,7 +28,7 @@ dat_tst <- readRDS(here("data", "bw30-navajo-tst.rds"))
 sec_btw_obs <- 3
 method_types <- c("gruMEWMA" , "mrfMEWMA"  , "varMEWMA", "htsquare")
 method_const <- 2 * c(0.1        , 0.1         , 0.1       , 0)
-method_l     <- c(2          , 2           , 1         , 1) 
+method_l     <- c(2          , 2           , 1         , 1)
 
 # Train models
 fit <-
