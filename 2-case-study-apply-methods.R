@@ -56,7 +56,8 @@ pstat <- names(pred_tst) |>
     bind_rows(fit[[x]]$pstat      |> as_tibble(),
               pred_ctl[[x]]$pstat |> as_tibble(),
               pred_tst[[x]]$pstat |> as_tibble()) |> 
-      mutate(Date_Time = pull(dat, Date_Time) |> tail(n()))
+      mutate(Date_Time = pull(dat, Date_Time) |> tail(n()),
+             `Hours Run`= pull(dat, `Hours Run`) |> tail(n()))
   }) |> 
   set_names(names(pred_tst))
 
