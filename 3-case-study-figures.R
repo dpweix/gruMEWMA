@@ -66,7 +66,7 @@ res <- names(pred_tst) |>
     bind_rows(fit[[x]]$residuals |> as_tibble(),
               pred_ctl[[x]]$residuals |> as_tibble(),
               pred_tst[[x]]$residuals |> as_tibble()) |> 
-      mutate(Date_Time = pull(dat, Date_Time) |> tail(n()))
+      mutate(`Hours Run` = pull(dat, `Hours Run`) |> tail(n()))
   }) |> 
   set_names(c("GRU", "MRF", "VAR", "Centered Data"))
 
@@ -75,10 +75,10 @@ res_plots <- 1:length(res) |>
   map(\(i) {
     res[[i]] |> 
       pivot_longer(all_of(var_monitored)) |> 
-      ggplot(aes(Date_Time, value)) +
+      ggplot(aes(`Hours Run`, value)) +
       geom_line() +
-      geom_vline(xintercept = end_trn, color = "blue") +
-      geom_vline(xintercept = end_tst, color = "red") +
+      geom_vline(xintercept = hr_split[1], color = "blue") +
+      geom_vline(xintercept = hr_split[2], color = "red") +
       facet_wrap(~ name, scales = "free") +
       labs(x = "", y = "Residuals",
            title = names(res)[i]) +
@@ -107,11 +107,11 @@ pstat_plots <- 1:3 |>
   map(\(i) {
     pstat[[i]] |> 
       mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
-      ggplot(aes(Date_Time, value)) +
+      ggplot(aes(`Hours Run`, value)) +
       geom_point(shape = 1, alpha = .1) +
       geom_line(aes(y = smoothed), color = "coral") +
-      geom_vline(xintercept = end_trn, color = "blue") +
-      geom_vline(xintercept = end_tst, color = "red") +
+      geom_vline(xintercept = hr_split[1], color = "blue") +
+      geom_vline(xintercept = hr_split[2], color = "red") +
       geom_hline(yintercept = h[[i]], color = "darkgreen") +
       labs(x = "", y = "Plotting Statistic",
            title = names(pstat)[i]) +
@@ -120,11 +120,11 @@ pstat_plots <- 1:3 |>
 
 pstat_plots[[4]] <- pstat[[4]] |> 
   mutate(smoothed = rollmedian(value, k = 101, align = "left", fill = TRUE)) |> 
-  ggplot(aes(Date_Time, value)) +
+  ggplot(aes(`Hours Run`, value)) +
   geom_point(shape = 1, alpha = .1) +
   geom_line(aes(y = smoothed), color = "coral") +
-  geom_vline(xintercept = end_trn, color = "blue") +
-  geom_vline(xintercept = end_tst, color = "red") +
+  geom_vline(xintercept = hr_split[1], color = "blue") +
+  geom_vline(xintercept = hr_split[2], color = "red") +
   geom_hline(yintercept = h[[3]], color = "darkgreen") +
   labs(x = "", y = "Plotting Statistic",
        title = expression("Hotelling's" ~ T^2)) +
