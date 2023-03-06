@@ -4,6 +4,7 @@ theme_update(plot.title = element_text(hjust = 0.5, size = 15),
              plot.subtitle = element_text(hjust = 0.5, size = 10),
              strip.placement = "outside",
              strip.background = element_blank())
+library("patchwork")
 library("here")
 library("lubridate")
 library("mlmewma")
@@ -29,6 +30,35 @@ end_tst <- ymd_hms("2020-11-01 08:00:00")
 
 hr_split <- range(filter(dat, between(Date_Time, end_trn, end_tst))$`Hours Run`)
 
+# x-axis breaks
+x_breaks <- seq(0, max(dat$`Hours Run`), 5)
+
+# TS plot of variables of interest with patchwork
+p_ts1 <- dat |> 
+  pivot_longer(c("Cell 1 Flux (LMH)", "Cell 2 Flux (LMH)")) |> 
+  ggplot(aes(`Hours Run`, value)) +
+  geom_line() + 
+  geom_vline(xintercept = hr_split[1], color = "blue") +
+  geom_vline(xintercept = hr_split[2], color = "red") +
+  facet_wrap(~ name, ncol = 1, scales = "free_x") +
+  labs(x = "", y = "") +
+  scale_x_continuous(breaks = x_breaks)
+
+p_ts2 <- dat |> 
+  pivot_longer(c("Perm. Cond. 1 (mS/cm)", "Perm. Cond. 2 (mS/cm)")) |> 
+  ggplot(aes(`Hours Run`, value)) +
+  geom_line() + 
+  geom_vline(xintercept = hr_split[1], color = "blue") +
+  geom_vline(xintercept = hr_split[2], color = "red") +
+  facet_wrap(~ name, ncol = 1, scales = "free_x") +
+  labs(y = "") +
+  scale_x_continuous(breaks = x_breaks)
+
+p_ts1/p_ts2
+
+ggsave(paste0(fig_path, "example-data-patch.png"),
+       width = 25, height = 20, units = "cm")
+
 # Time series plots variables of interest
 dat |> 
   pivot_longer(all_of(var_monitored)) |> 
@@ -37,7 +67,8 @@ dat |>
   geom_vline(xintercept = hr_split[1], color = "blue") +
   geom_vline(xintercept = hr_split[2], color = "red") +
   facet_wrap(~ name, ncol = 1, scales = "free") +
-  labs(x = "", y = "")
+  labs(y = "") +
+  scale_x_continuous(breaks = x_breaks)
 
 ggsave(paste0(fig_path, "example-data.png"),
        width = 25, height = 20, units = "cm")
@@ -50,10 +81,23 @@ dat |>
   geom_vline(xintercept = hr_split[1], color = "blue") +
   geom_vline(xintercept = hr_split[2], color = "red") +
   facet_wrap(~ name, ncol = 1, scales = "free") +
-  labs(x = "", y = "")
+  labs(y = "") + 
+  scale_x_continuous(breaks = x_breaks)
 
 ggsave(paste0(fig_path, "example-data-1.png"),
        width = 25, height = 10, units = "cm")
+
+# Time series plot of feed conductivity vs. time
+dat |> 
+  ggplot(aes(`Hours Run`, `Feed Cond. (mS/cm)`)) +
+  geom_line() +
+  geom_vline(xintercept = hr_split[1], color = "blue") +
+  geom_vline(xintercept = hr_split[2], color = "red") +
+  labs(title = "Feed Conductivity (mS/cm)", y = "") +
+  scale_x_continuous(breaks = x_breaks)
+
+ggsave(paste0(fig_path, "feed-cond.png"),
+       width = 25, height = 5, units = "cm")
 
 
 # Combine model residuals for all data
@@ -80,9 +124,9 @@ res_plots <- 1:length(res) |>
       geom_vline(xintercept = hr_split[1], color = "blue") +
       geom_vline(xintercept = hr_split[2], color = "red") +
       facet_wrap(~ name, scales = "free") +
-      labs(x = "", y = "Residuals",
-           title = names(res)[i]) +
-      lims(y = c(-3, 6))
+      labs(y = "Residuals", title = names(res)[i]) +
+      lims(y = c(-3, 4)) +
+      scale_x_continuous(breaks = x_breaks)
   })
 
 # Save Plots
@@ -113,8 +157,8 @@ pstat_plots <- 1:3 |>
       geom_vline(xintercept = hr_split[1], color = "blue") +
       geom_vline(xintercept = hr_split[2], color = "red") +
       geom_hline(yintercept = h[[i]], color = "darkgreen") +
-      labs(x = "", y = "Plotting Statistic",
-           title = names(pstat)[i]) +
+      labs(y = "Plotting Statistic", title = names(pstat)[i]) +
+      scale_x_continuous(breaks = x_breaks) +
       lims(y = c(0, y_lims[[i]]))
   })
 
@@ -126,8 +170,8 @@ pstat_plots[[4]] <- pstat[[4]] |>
   geom_vline(xintercept = hr_split[1], color = "blue") +
   geom_vline(xintercept = hr_split[2], color = "red") +
   geom_hline(yintercept = h[[3]], color = "darkgreen") +
-  labs(x = "", y = "Plotting Statistic",
-       title = expression("Hotelling's" ~ T^2)) +
+  labs(y = "Plotting Statistic", title = expression("Hotelling's" ~ T^2)) +
+  scale_x_continuous(breaks = x_breaks) +
   lims(y = c(0, y_lims[[3]]))
 
 # Save Plots
