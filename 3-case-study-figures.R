@@ -31,7 +31,7 @@ end_tst <- ymd_hms("2020-11-01 08:00:00")
 hr_split <- range(filter(dat, between(Date_Time, end_trn, end_tst))$`Hours Run`)
 
 # x-axis breaks
-x_breaks <- seq(0, max(dat$`Hours Run`), 5)
+x_breaks <- seq(0, max(dat$`Hours Run`), 3)
 
 # TS plot of variables of interest with patchwork
 p_ts1 <- dat |> 
