@@ -3,7 +3,8 @@ theme_set(theme_bw())
 theme_update(plot.title = element_text(hjust = 0.5, size = 15),
              plot.subtitle = element_text(hjust = 0.5, size = 10),
              strip.placement = "outside",
-             strip.background = element_blank())
+             strip.background = element_blank(),
+             strip.text.x = element_text(size = 15))
 library("patchwork")
 library("here")
 library("lubridate")
@@ -133,7 +134,7 @@ res_plots <- 1:length(res) |>
 1:length(res) |> 
   walk(\(i) {
     ggsave(filename = paste0(fig_path, "res-", names(res)[i], ".png"),
-           plot = res_plots[[i]], width = 30, height = 10, units = "cm")
+           plot = res_plots[[i]], width = 25, height = 10, units = "cm")
   })
 
 # Read plotting statistics and control limit
@@ -159,6 +160,7 @@ pstat_plots <- 1:3 |>
       geom_hline(yintercept = h[[i]], color = "darkgreen") +
       labs(y = "Plotting Statistic", title = names(pstat)[i]) +
       scale_x_continuous(breaks = x_breaks) +
+      theme(plot.title = element_text(hjust = 0.5, size = 20)) +
       lims(y = c(0, y_lims[[i]]))
   })
 
@@ -172,7 +174,8 @@ pstat_plots[[4]] <- pstat[[4]] |>
   geom_hline(yintercept = h[[3]], color = "darkgreen") +
   labs(y = "Plotting Statistic", title = expression("Hotelling's" ~ T^2)) +
   scale_x_continuous(breaks = x_breaks) +
-  lims(y = c(0, y_lims[[3]]))
+  theme(plot.title = element_text(hjust = 0.5, size = 20)) +
+  lims(y = c(0, y_lims[[3]])) 
 
 # Save Plots
 1:length(pstat) |> 
@@ -268,7 +271,8 @@ acf_ctl_plots <-
     
     autoplot(acf_vals) +
       labs(title = paste0(names(res_ctl)[i])) +
-      lims(y = c(-.1, 1))
+      lims(y = c(-.1, 1)) +
+      theme(plot.title = element_text(hjust = 0.5, size = 33))
     
     # ggAcf(res_tst[[i]], type = "correlation", lag.max = 50) +
     #   lims(y = c(0, 1)) +
