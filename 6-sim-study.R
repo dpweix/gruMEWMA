@@ -4,12 +4,13 @@ library("tidyverse")
 
 # Parameters for study
 data_type <- "lin" #lin, ltl, nlr, ltm
-n_sim     <- 1000
-l         <- 2
-arl       <- 200
-n_ic_mod  <- 10000
-n_ic_h    <- 10000
-n_oc      <- 20000
+n_sim     <- 1000  # 1000
+l         <- 2     # 2
+arl       <- 200   # 200
+phi       <- 0     # 0, .4, .8
+n_ic_mod  <- 10000 # 10000
+n_ic_h    <- 10000 # 10000
+n_oc      <- 20000 # 20000
 
 # Parameters for application
 n_cores  <- parallel::detectCores()
@@ -37,7 +38,7 @@ job_tib <-
         rstudioapi::jobRunScript(path = here("5-arl-study.R"), importEnv = TRUE)
       })
     
-    while(!all(file.exists(here("results", paste0("arl-sim-", data_type, "-", sims, ".rds"))))) {
+    while(!all(file.exists(here("results", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
       print(paste("Processing Batch:", b))
       Sys.sleep(60)
     } 
@@ -49,7 +50,7 @@ arl_val <-
   1:(n_sim) |> 
   purrr::map_dfr(\(i) {
     
-    arl_sim <- readRDS(here("results", paste0("arl-sim-", data_type, "-", i, ".rds")))
+    arl_sim <- readRDS(here("results", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
     arl_sim$rl
     
   }) |> 
@@ -57,7 +58,7 @@ arl_val <-
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
 # Save aggregated results
-saveRDS(arl_val, file = here("results", paste0("arl-sim-", data_type, ".rds")))
+saveRDS(arl_val, file = here("results", paste0("arl-sim-", phi,"-", data_type, ".rds")))
 
 ### Make latex tables ---------------------------------------------------------
 library("kableExtra")

@@ -7,8 +7,10 @@ path_py <- "~/git/mlmewma/inst/python/gru_functions.py"
 source_python(path_py)
 
 ### Get ARL -------------------------------------------------------------------
-gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n_oc = 500,
-                              l = 2, arl = 40, ic_arl_first = FALSE) {
+gen_sim_study_brk <- function(data_type = "lin",
+                              n_ic_mod = 500, n_ic_h = 500, n_oc = 500,
+                              phi = 0.8, l = 2, arl = 40,
+                              ic_arl_first = FALSE) {
   # Constants
   id_trn_mod <- 1:n_ic_mod
   id_trn_h <- (n_ic_mod-l):(n_ic_mod+n_ic_h)
@@ -16,10 +18,10 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
   ql <- 1 - 1/arl
   
   ### Gen Data ###
-  if(data_type == "lin")      dat <- gen_dat_lin(n_ic_mod + n_ic_h, n_oc)
-  else if(data_type == "ltl") dat <- gen_dat_ltl(n_ic_mod + n_ic_h, n_oc)
-  else if(data_type == "nlr") dat <- gen_dat_nlr(n_ic_mod + n_ic_h, n_oc)
-  else if(data_type == "ltm") dat <- gen_dat_ltm(n_ic_mod + n_ic_h, n_oc)
+  if(data_type == "lin")      dat <- gen_dat_lin(n_ic_mod + n_ic_h, n_oc, phi)
+  else if(data_type == "ltl") dat <- gen_dat_ltl(n_ic_mod + n_ic_h, n_oc, phi)
+  else if(data_type == "nlr") dat <- gen_dat_nlr(n_ic_mod + n_ic_h, n_oc, phi)
+  else if(data_type == "ltm") dat <- gen_dat_ltm(n_ic_mod + n_ic_h, n_oc, phi)
   
   # Choice of Methods
   methods <- 
@@ -77,6 +79,7 @@ gen_sim_study_brk <- function(data_type = "lin", n_ic_mod = 500, n_ic_h = 500, n
     map2_dfr(pred, h, .id = "method",
          \(x, y) {
            tibble(
+             phi = phi,
              data = data_type,
              nf = ifelse(ic_arl_first,
                     get_first_fault(tail(x$nf$pstat, n_oc), y),
