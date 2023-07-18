@@ -11,12 +11,13 @@ source_python(path_py)
 
 # Where to save figures
 fig_path <- here("figures/")
+phi <- 0
 
 # Generate data
-dat_lin <- gen_dat_lin(n_ic = 1000, n_oc = 1000)
-dat_ltl <- gen_dat_ltl(n_ic = 1000, n_oc = 1000)
-dat_nlr <- gen_dat_nlr(n_ic = 1000, n_oc = 1000)
-dat_ltm <- gen_dat_ltm(n_ic = 1000, n_oc = 1000)
+dat_lin <- gen_dat_lin(n_ic = 1000, n_oc = 1000, phi = phi)
+dat_ltl <- gen_dat_ltl(n_ic = 1000, n_oc = 1000, phi = phi)
+dat_nlr <- gen_dat_nlr(n_ic = 1000, n_oc = 1000, phi = phi)
+dat_ltm <- gen_dat_ltm(n_ic = 1000, n_oc = 1000, phi = phi)
 
 # Generate all labels for plots
 titles <- 
