@@ -64,13 +64,12 @@ gen_sim_study_brk <- function(data_type = "lin",
   
   # Predictions
   pred <-
-    fit |> 
-    map(\(x) {
+    map2(fit, pred_h, \(x, y) {
       list(
-        nf = predict_fd(x, dat$none[id_tst, ]),
-        f1 = predict_fd(x, dat$f1[id_tst, ]),
-        f2 = predict_fd(x, dat$f2[id_tst, ]),
-        f3 = predict_fd(x, dat$f3[id_tst, ])
+        nf = predict_fd(x, dat$none[id_tst, ], pstat0 = last(y$pstat)),
+        f1 = predict_fd(x, dat$f1[id_tst, ], pstat0 = last(y$pstat)),
+        f2 = predict_fd(x, dat$f2[id_tst, ], pstat0 = last(y$pstat)),
+        f3 = predict_fd(x, dat$f3[id_tst, ], pstat0 = last(y$pstat))
       )
     })
   
