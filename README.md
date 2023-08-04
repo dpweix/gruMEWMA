@@ -1,5 +1,4 @@
-README
-================
+# README
 
 ## Set Up
 
@@ -95,6 +94,11 @@ tables.</td>
 <tr class="odd">
 <td>7-visualize-study.R</td>
 <td>This file provides time series plots for all the different data
+generation structures and their respective faults.</td>
+</tr>
+<tr class="even">
+<td>8-visualize-study-3D.R</td>
+<td>This file generates 3D scatter plots for all the different data
 generation structures and their respective faults.</td>
 </tr>
 </tbody>
