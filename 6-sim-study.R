@@ -3,18 +3,18 @@ library("here")
 library("tidyverse")
 
 # Parameters for study
-data_type <- "lin" #lin, ltl, nlr, ltm
+data_type <- "ltm" # lin, ltl, nlr, ltm
 n_sim     <- 1000  # 1000
 l         <- 2     # 2
-arl       <- 200   # 200
-phi       <- 0     # 0, .4, .8
+arl       <- 200   # 200\
+phi       <- 0.8   # 0, .4, .8
 n_ic_mod  <- 10000 # 10000
 n_ic_h    <- 10000 # 10000
 n_oc      <- 20000 # 20000
 
 # Parameters for application
 n_cores  <- parallel::detectCores()
-max_jobs <- n_cores
+max_jobs <- n_cores - 3
 batches  <- ceiling(n_sim/max_jobs)
 
 ### ARL Simulation ------------------------------------------------------------
@@ -39,12 +39,12 @@ job_tib <-
       })
     
     while(!all(file.exists(here("results", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
-      print(paste("Processing Batch:", b))
+      print(paste0("Processing Batch: ", b, "/", batches))
       Sys.sleep(60)
-    } 
-
+    }
+    
   })
-
+ 
 # Load simulation results and calculate ARLs
 arl_val <- 
   1:(n_sim) |> 
