@@ -39,18 +39,11 @@ job_tib <-
         rstudioapi::jobRunScript(path = here("5-arl-study.R"), importEnv = TRUE)
       })
     
-<<<<<<< HEAD
-    while(!all(file.exists(here("results", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
-      print(paste0("Processing Batch: ", b, "/", batches))
-      Sys.sleep(60)
-    }
-    
-=======
+
     while(!all(file.exists(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
       print(paste("Processing Batch:", b))
       Sys.sleep(60)
     } 
->>>>>>> 32640992b958604094db763ef3ee778f2852f05f
   })
  
 # Load simulation results and calculate ARLs
