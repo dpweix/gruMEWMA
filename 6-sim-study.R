@@ -3,14 +3,15 @@ library("here")
 library("tidyverse")
 
 # Parameters for study
-data_type <- "lin" #lin, ltl, nlr, ltm
-n_sim     <- 10  # 1000
+data_type <- "nlr" #lin, ltl, nlr, ltm
+n_sim     <- 1000  # 1000
 l         <- 2     # 2
 arl       <- 200   # 200
 phi       <- 0.8     # 0, .4, .8
-n_ic_mod  <- 1000 # 10000
-n_ic_h    <- 1000 # 10000
-n_oc      <- 2000 # 20000
+B         <- 10000 # 10000
+n_ic_mod  <- 10000 # 10000
+n_ic_h    <- 10000 # 10000
+n_oc      <- 20000 # 20000
 
 # Parameters for application
 n_cores  <- parallel::detectCores()
@@ -38,7 +39,7 @@ job_tib <-
         rstudioapi::jobRunScript(path = here("5-arl-study.R"), importEnv = TRUE)
       })
     
-    while(!all(file.exists(here("results", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
+    while(!all(file.exists(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
       print(paste("Processing Batch:", b))
       Sys.sleep(60)
     } 
@@ -49,15 +50,44 @@ arl_val <-
   1:(n_sim) |> 
   purrr::map_dfr(\(i) {
     
-    arl_sim <- readRDS(here("results", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    arl_sim <- readRDS(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
     arl_sim$rl
     
   }) |> 
   group_by(method) |> 
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
+arl_val
+
+# Example bootstrap control limits.
+tmp <- 
+  1:(n_sim) |> 
+  purrr::map(\(i) {
+    
+    arl_sim <- readRDS(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    
+  })
+
+df_h <- tmp[[1]]$h_bootstrap |> 
+  as_tibble()
+
+df_h
+
+df_h |> 
+  pivot_longer(is.double, names_transform = as_factor) |> 
+  group_by(name) |> 
+  mutate(h_mean = mean(value),
+         h_median = median(value)) |> 
+  ggplot(aes(value)) +
+  geom_histogram(bins = 20) +
+  geom_vline(aes(xintercept = h_mean), color = "red") +
+  geom_vline(aes(xintercept = h_median), color = "blue") +
+  facet_wrap(~name, scales = "free", ncol = 4)
+
+tmp[[1]]$h
+
 # Save aggregated results
-saveRDS(arl_val, file = here("results", paste0("arl-sim-", phi,"-", data_type, ".rds")))
+saveRDS(arl_val, file = here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, ".rds")))
 
 ### Make latex tables ---------------------------------------------------------
 library("kableExtra")

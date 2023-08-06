@@ -10,6 +10,7 @@ source_python(path_py)
 gen_sim_study_brk <- function(data_type = "lin",
                               n_ic_mod = 500, n_ic_h = 500, n_oc = 500,
                               phi = 0.8, l = 2, arl = 40,
+                              B = 500,
                               ic_arl_first = FALSE) {
   # Constants
   id_trn_mod <- 1:n_ic_mod
@@ -55,12 +56,24 @@ gen_sim_study_brk <- function(data_type = "lin",
       predict_fd(x, dat$none[id_trn_h, ])
     })
   
-  # Get h Level
-  h <- 
+  # Bootstrap sample of h
+  h_bootstrap <- 
     pred_h |> 
     map(\(x) {
-      quantile(x$pstat, ql) |> as.numeric()
-    })
+      1:B |> 
+        map_dbl(\(b) {
+          quantile(sample(x$pstat, length(x$pstat), replace = TRUE), ql)
+        })
+    }) |> 
+    set_names(method_names)
+  
+  # Get h Level
+  h <- map(h_bootstrap, mean)
+    # pred_h |> 
+    # map(\(x) {
+      # Original
+      # quantile(x$pstat, ql) |> as.numeric()
+    # })
   
   # Predictions
   pred <-
@@ -111,7 +124,8 @@ gen_sim_study_brk <- function(data_type = "lin",
   list(pstat = pstat,
        rl = rl,
        h = tibble(method = h |> names() |> as_factor(),
-                  h = unlist(h)))
+                  h = unlist(h)),
+       h_bootstrap = h_bootstrap)
 }
 
 
