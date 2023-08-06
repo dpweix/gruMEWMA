@@ -11,9 +11,10 @@ source_python(path_py)
 
 # Where to save figures
 fig_path <- here("figures/")
-phi <- 0
+phi <- 0.8
 
 # Generate data
+set.seed(123)
 dat_lin <- gen_dat_lin(n_ic = 1000, n_oc = 1000, phi = phi)
 dat_ltl <- gen_dat_ltl(n_ic = 1000, n_oc = 1000, phi = phi)
 dat_nlr <- gen_dat_nlr(n_ic = 1000, n_oc = 1000, phi = phi)
@@ -21,8 +22,8 @@ dat_ltm <- gen_dat_ltm(n_ic = 1000, n_oc = 1000, phi = phi)
 
 # Generate all labels for plots
 titles <- 
-  expand.grid(c("Linear Stationary:"    , "Linear Nonstationary:",
-                "Non-Linear Stationary:", "Non-Linear Nonstationary:"),
+  expand.grid(c("Linear Stationary:"    , "Linear Non-stationary:",
+                "Non-linear Stationary:", "Non-Linear Non-stationary:"),
               c("No Fault", "Fault 1", "Fault 2", "Fault 3")) |> 
   arrange(Var1) |>
   pmap_chr(paste)
@@ -70,26 +71,28 @@ plots$`Linear Stationary: Fault 1`
 plots$`Linear Stationary: Fault 2`
 plots$`Linear Stationary: Fault 3`
 
-plots$`Linear Nonstationary: No Fault`
-plots$`Linear Nonstationary: Fault 1`
-plots$`Linear Nonstationary: Fault 2`
-plots$`Linear Nonstationary: Fault 3`
+plots$`Linear Non-stationary: No Fault`
+plots$`Linear Non-stationary: Fault 1`
+plots$`Linear Non-stationary: Fault 2`
+plots$`Linear Non-stationary: Fault 3`
 
-plots$`Non-Linear Stationary: No Fault`
-plots$`Non-Linear Stationary: Fault 1`
-plots$`Non-Linear Stationary: Fault 2`
-plots$`Non-Linear Stationary: Fault 3`
+plots$`Non-linear Stationary: No Fault`
+plots$`Non-linear Stationary: Fault 1`
+plots$`Non-linear Stationary: Fault 2`
+plots$`Non-linear Stationary: Fault 3`
 
-plots$`Non-Linear Nonstationary: No Fault`
-plots$`Non-Linear Nonstationary: Fault 1`
-plots$`Non-Linear Nonstationary: Fault 2`
-plots$`Non-Linear Nonstationary: Fault 3`
+plots$`Non-linear Non-stationary: No Fault`
+plots$`Non-linear Non-stationary: Fault 1`
+plots$`Non-linear Non-stationary: Fault 2`
+plots$`Non-linear Non-stationary: Fault 3`
 
 # Save all plots
 1:length(plots) |> 
   walk(\(n) {
     ggsave(paste0(fig_path,
                   str_replace_all(titles[[n]], " ", "-") |> str_remove(":"),
+                  "-",
+                  phi,
                   ".png"),
            plots[[n]], units = "cm", width = 12, height = 8)
   })

@@ -3,11 +3,12 @@ library("here")
 library("tidyverse")
 
 # Parameters for study
-data_type <- "ltm" # lin, ltl, nlr, ltm
+data_type <- "nlr" #lin, ltl, nlr, ltm
 n_sim     <- 1000  # 1000
 l         <- 2     # 2
-arl       <- 200   # 200\
-phi       <- 0.8   # 0, .4, .8
+arl       <- 200   # 200
+phi       <- 0.8     # 0, .4, .8
+B         <- 10000 # 10000
 n_ic_mod  <- 10000 # 10000
 n_ic_h    <- 10000 # 10000
 n_oc      <- 20000 # 20000
@@ -38,11 +39,18 @@ job_tib <-
         rstudioapi::jobRunScript(path = here("5-arl-study.R"), importEnv = TRUE)
       })
     
+<<<<<<< HEAD
     while(!all(file.exists(here("results", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
       print(paste0("Processing Batch: ", b, "/", batches))
       Sys.sleep(60)
     }
     
+=======
+    while(!all(file.exists(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
+      print(paste("Processing Batch:", b))
+      Sys.sleep(60)
+    } 
+>>>>>>> 32640992b958604094db763ef3ee778f2852f05f
   })
  
 # Load simulation results and calculate ARLs
@@ -50,15 +58,44 @@ arl_val <-
   1:(n_sim) |> 
   purrr::map_dfr(\(i) {
     
-    arl_sim <- readRDS(here("results", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    arl_sim <- readRDS(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
     arl_sim$rl
     
   }) |> 
   group_by(method) |> 
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
+arl_val
+
+# Example bootstrap control limits.
+tmp <- 
+  1:(n_sim) |> 
+  purrr::map(\(i) {
+    
+    arl_sim <- readRDS(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    
+  })
+
+df_h <- tmp[[1]]$h_bootstrap |> 
+  as_tibble()
+
+df_h
+
+df_h |> 
+  pivot_longer(is.double, names_transform = as_factor) |> 
+  group_by(name) |> 
+  mutate(h_mean = mean(value),
+         h_median = median(value)) |> 
+  ggplot(aes(value)) +
+  geom_histogram(bins = 20) +
+  geom_vline(aes(xintercept = h_mean), color = "red") +
+  geom_vline(aes(xintercept = h_median), color = "blue") +
+  facet_wrap(~name, scales = "free", ncol = 4)
+
+tmp[[1]]$h
+
 # Save aggregated results
-saveRDS(arl_val, file = here("results", paste0("arl-sim-", phi,"-", data_type, ".rds")))
+saveRDS(arl_val, file = here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, ".rds")))
 
 ### Make latex tables ---------------------------------------------------------
 library("kableExtra")
@@ -66,34 +103,70 @@ library("here")
 library("tidyverse")
 
 # All ARL Tables
-arl_lin <- readRDS(here("results", "arl-sim-lin.rds"))
-arl_ltl <- readRDS(here("results", "arl-sim-ltl.rds"))
-arl_nlr <- readRDS(here("results", "arl-sim-nlr.rds"))
-arl_ltm <- readRDS(here("results", "arl-sim-ltm.rds"))
+arl_0_lin <- readRDS(here("results", "arl-sim-0-lin.rds"))
+arl_0_ltl <- readRDS(here("results", "arl-sim-0-ltl.rds"))
+arl_0_nlr <- readRDS(here("results", "arl-sim-0-nlr.rds"))
+arl_0_ltm <- readRDS(here("results", "arl-sim-0-ltm.rds"))
+
+arl_0.4_lin <- readRDS(here("results", "arl-sim-0.4-lin.rds"))
+arl_0.4_ltl <- readRDS(here("results", "arl-sim-0.4-ltl.rds"))
+arl_0.4_nlr <- readRDS(here("results", "arl-sim-0.4-nlr.rds"))
+arl_0.4_ltm <- readRDS(here("results", "arl-sim-0.4-ltm.rds"))
+
+arl_0.8_lin <- readRDS(here("results", "arl-sim-0.8-lin.rds"))
+arl_0.8_ltl <- readRDS(here("results", "arl-sim-0.8-ltl.rds"))
+arl_0.8_nlr <- readRDS(here("results", "arl-sim-0.8-nlr.rds"))
+arl_0.8_ltm <- readRDS(here("results", "arl-sim-0.8-ltm.rds"))
 
 # Tibble of Methods
-methods <- arl_lin$method |> 
-  str_split("-") |> 
-  map_dfr(\(x) {
-    tibble(Method = x[1], `$r$` = x[2])
-  })
+methods <- expand_grid(`$\\phi$` = c(0, .4, .8),
+                       data = c("Linear Stationary", "Linear Non-stationary", 
+                                "Non-linear Stationary", "Non-linear Non-stationary"),
+                       arl_0_lin$method |> 
+                         str_split("-") |> 
+                         map_dfr(\(x) {
+                           tibble(Method = x[1], `$r$` = x[2])
+                         }))
 
-# Tibble of ARLs
-arls <- list(arl_lin, arl_ltl, arl_nlr, arl_ltm) |> 
-  map(\(x) {
-    transmute(x, across(where(is.numeric), round, 2)) |> 
-      set_names(c("$ARL_0$", "$ARL_{F1}$", "$ARL_{F2}$", "$ARL_{F3}$"))
-  }) |> 
-  bind_cols(.name_repair = "minimal")
+df_arl_basic <- bind_rows(list(arl_0_lin, arl_0_ltl, arl_0_nlr, arl_0_ltm,
+                               arl_0.4_lin, arl_0.4_ltl, arl_0.4_nlr, arl_0.4_ltm,
+                               arl_0.8_lin, arl_0.8_ltl, arl_0.8_nlr, arl_0.8_ltm))
 
-# LaTeX Table: Linear Data
-bind_cols(methods, arls[, 1:8], .name_repair = "minimal") |> 
-  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '', '\\addlinespace'),
-      escape = FALSE) |> 
-  add_header_above(c(" " = 2, "Linear Short-Term" = 4, "Linear Long-Term" = 4))
+df_arl <- 
+  bind_cols(methods,
+            df_arl_basic |> select(contains("f"))) |> 
+  mutate(across(where(is.numeric), \(x) {round(x, 2)})) |> 
+  set_names(c("$\\phi$", "Data Type", "Method", "$\\lambda$",
+              "$ARL_0$", "$ARL_{F1}$", "$ARL_{F2}$", "$ARL_{F3}$"))
 
-# LaTeX Table: Non-Linear Data
-bind_cols(methods, arls[, 9:16], .name_repair = "minimal") |> 
-  kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '', '\\addlinespace'),
-      escape = FALSE) |> 
-  add_header_above(c(" " = 2, "Non-Linear Short-Term" = 4, "Non-Linear Long-Term" = 4))
+
+# Prints ARL for Stationary and Non-stationary 
+print_arl <- function(phi, linear = FALSE) {
+  if(!linear) {
+    df <- df_arl |> filter(`$\\phi$` == phi) |> filter(str_detect(`Data Type`, "Non-linear"))
+    
+    bind_cols(df[1:17, c(1, 3:8)], df[18:34, 5:8], .name_repair = "minimal") |> 
+      kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '', '\\addlinespace'),
+          escape = FALSE) |> 
+      add_header_above(c(" " = 3, "Non-linear Stationary" = 4, "Non-linear Non-stationary" = 4)) |> 
+      row_spec(c(1:4, 9:12, 17), background = "lightgray")
+    
+  } else {
+    df <- df_arl |> filter(`$\\phi$` == phi) |> filter(!str_detect(`Data Type`, "Non-linear"))
+    
+    bind_cols(df[1:17, c(1, 3:8)], df[18:34, 5:8], .name_repair = "minimal") |> 
+      kbl(format = "latex", booktabs = TRUE, linesep =  c('', '', '', '\\addlinespace'),
+          escape = FALSE) |> 
+      add_header_above(c(" " = 3, "Linear Stationary" = 4, "Linear Non-stationary" = 4)) |> 
+      row_spec(c(1:4, 9:12, 17), background = "lightgray")
+  }
+}
+
+print_arl(phi = 0, linear = TRUE)
+print_arl(phi = 0, linear = FALSE)
+
+print_arl(phi = 0.4, linear = TRUE)
+print_arl(phi = 0.4, linear = FALSE)
+
+print_arl(phi = 0.8, linear = TRUE)
+print_arl(phi = 0.8, linear = FALSE)

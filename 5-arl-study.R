@@ -25,11 +25,12 @@ arl_sim <-
                     n_oc = n_oc,
                     phi = phi,
                     l = l,
-                    arl = arl)
+                    arl = arl,
+                    B = B)
 
 # Save results (leaving out pstat for disk space reasons)
-saveRDS(arl_sim[2:3],
-        file = here("results",
+saveRDS(arl_sim[-1],
+        file = here("results-bootstrap",
                     paste0("arl-sim-", phi,"-", data_type, "-", part, ".rds")))
 
 
