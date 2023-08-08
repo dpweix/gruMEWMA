@@ -57,23 +57,22 @@ gen_sim_study_brk <- function(data_type = "lin",
     })
   
   # Bootstrap sample of h
-  h_bootstrap <- 
-    pred_h |> 
-    map(\(x) {
-      1:B |> 
-        map_dbl(\(b) {
-          quantile(sample(x$pstat, length(x$pstat), replace = TRUE), ql)
-        })
-    }) |> 
-    set_names(method_names)
+  # h_bootstrap <- 
+  #   pred_h |> 
+  #   map(\(x) {
+  #     1:B |> 
+  #       map_dbl(\(b) {
+  #         quantile(sample(x$pstat, length(x$pstat), replace = TRUE), ql)
+  #       })
+  #   }) |> 
+  #   set_names(method_names)
   
   # Get h Level
-  h <- map(h_bootstrap, mean)
-    # pred_h |> 
-    # map(\(x) {
-      # Original
-      # quantile(x$pstat, ql) |> as.numeric()
-    # })
+  h <- #map(h_bootstrap, mean)
+    pred_h |>
+    map(\(x) {
+      quantile(x$pstat, ql) |> as.numeric()
+    })
   
   # Predictions
   pred <-
@@ -124,8 +123,7 @@ gen_sim_study_brk <- function(data_type = "lin",
   list(pstat = pstat,
        rl = rl,
        h = tibble(method = h |> names() |> as_factor(),
-                  h = unlist(h)),
-       h_bootstrap = h_bootstrap)
+                  h = unlist(h)))
 }
 
 

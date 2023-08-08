@@ -3,19 +3,18 @@ library("here")
 library("tidyverse")
 
 # Parameters for study
-data_type <- "nlr" #lin, ltl, nlr, ltm
+data_type <- "lin" #lin, ltl, nlr, ltm
 n_sim     <- 1000  # 1000
 l         <- 2     # 2
 arl       <- 200   # 200
 phi       <- 0.8     # 0, .4, .8
-B         <- 10000 # 10000
 n_ic_mod  <- 10000 # 10000
 n_ic_h    <- 10000 # 10000
 n_oc      <- 20000 # 20000
 
 # Parameters for application
 n_cores  <- parallel::detectCores()
-max_jobs <- 5
+max_jobs <- n_cores - 3
 batches  <- ceiling(n_sim/max_jobs)
 
 ### ARL Simulation ------------------------------------------------------------
@@ -39,7 +38,7 @@ job_tib <-
         rstudioapi::jobRunScript(path = here("5-arl-study.R"), importEnv = TRUE)
       })
     
-    while(!all(file.exists(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
+    while(!all(file.exists(here("results", paste0("arl-sim-", phi,"-", data_type, "-", sims, ".rds"))))) {
       print(paste("Processing Batch:", b))
       Sys.sleep(60)
     } 
@@ -50,21 +49,41 @@ arl_val <-
   1:(n_sim) |> 
   purrr::map_dfr(\(i) {
     
-    arl_sim <- readRDS(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    arl_sim <- readRDS(here("results-first-run", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
     arl_sim$rl
     
   }) |> 
   group_by(method) |> 
-  summarise(across(where(is.numeric), mean, na.rm = TRUE))
+  summarise(across(where(is.numeric), median, na.rm = TRUE))
 
 arl_val
+
+# Plot Run Lengths
+df_rl <- 
+  1:(n_sim) |> 
+  purrr::map_dfr(\(i) {
+    
+    arl_sim <- readRDS(here("results-first-run", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    arl_sim$rl
+    
+  })
+
+plot_path <- "~/Dropbox/dissertation/gruMEWMA/revision-1/investigation-files/sim-study-investigation/"
+
+df_rl |> 
+  ggplot(aes(nf)) +
+  geom_histogram(bins = 40) +
+  facet_wrap(vars(method, phi, data), ncol = 4, scales = "free")
+
+ggsave()
+
 
 # Example bootstrap control limits.
 tmp <- 
   1:(n_sim) |> 
   purrr::map(\(i) {
     
-    arl_sim <- readRDS(here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    arl_sim <- readRDS(here("results", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
     
   })
 
@@ -87,7 +106,7 @@ df_h |>
 tmp[[1]]$h
 
 # Save aggregated results
-saveRDS(arl_val, file = here("results-bootstrap", paste0("arl-sim-", phi,"-", data_type, ".rds")))
+saveRDS(arl_val, file = here("results", paste0("arl-sim-", phi,"-", data_type, ".rds")))
 
 ### Make latex tables ---------------------------------------------------------
 library("kableExtra")
