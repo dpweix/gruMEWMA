@@ -17,6 +17,7 @@ gen_sim_study_brk <- function(data_type = "lin",
   id_trn_h <- (n_ic_mod-l):(n_ic_mod+n_ic_h)
   id_tst <- (n_ic_mod + n_ic_h - l):(n_ic_mod + n_ic_h + n_oc) # adjust l for varma and htsquare
   ql <- 1 - 1/arl
+  p <- 3
   
   ### Gen Data ###
   if(data_type == "lin")      dat <- gen_dat_lin(n_ic_mod + n_ic_h, n_oc, phi)
@@ -81,7 +82,7 @@ gen_sim_study_brk <- function(data_type = "lin",
         nf = predict_fd(x, dat$none[id_tst, ], pstat0 = last(y$pstat)),
         f1 = predict_fd(x, dat$f1[id_tst, ], pstat0 = last(y$pstat)),
         f2 = predict_fd(x, dat$f2[id_tst, ], pstat0 = last(y$pstat)),
-        f3 = predict_fd(x, dat$f3[id_tst, ], pstat0 = last(y$pstat))
+        f3 = predict_fd(x, dat$f3[id_tst, ], pstat0 = last(y$pstat)) # last(y$pstat)
       )
     })
   
