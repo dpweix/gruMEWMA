@@ -3,11 +3,11 @@ library("here")
 library("tidyverse")
 
 # Parameters for study
-data_type <- "lin" #lin, ltl, nlr, ltm
+data_type <- "ltm" #lin, ltl, nlr, ltm
 n_sim     <- 1000  # 1000
 l         <- 2     # 2
 arl       <- 200   # 200
-phi       <- 0.8     # 0, .4, .8
+phi       <- 0.8  # 0, .4, .8
 n_ic_mod  <- 10000 # 10000
 n_ic_h    <- 10000 # 10000
 n_oc      <- 20000 # 20000
@@ -44,66 +44,36 @@ job_tib <-
     } 
   })
 
+# Robust measurement of center
+trimmed_mean <- function(x, trim = 0.05, side = "both") {
+  x <- sort(x, na.last = NA)
+  n <- length(x)
+  n_trim <- ceiling(n*trim)
+  
+  if(side == "both") {
+    x <- x[n_trim:(n-n_trim)]
+  } else if(side == "left") {
+    x <- x[n_trim:n]
+  } else if(side == "right") {
+    x <- x[1:(n-n_trim)]
+  }
+  
+  mean(x, na.rm = TRUE)
+}
+
 # Load simulation results and calculate ARLs
 arl_val <- 
   1:(n_sim) |> 
   purrr::map_dfr(\(i) {
     
-    arl_sim <- readRDS(here("results-first-run", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
+    arl_sim <- readRDS(here("results", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
     arl_sim$rl
     
   }) |> 
   group_by(method) |> 
-  summarise(across(where(is.numeric), median, na.rm = TRUE))
+  summarise(across(where(is.numeric), \(x) trimmed_mean(x, trim = 0.10, side = "right")))
 
 arl_val
-
-# Plot Run Lengths
-df_rl <- 
-  1:(n_sim) |> 
-  purrr::map_dfr(\(i) {
-    
-    arl_sim <- readRDS(here("results-first-run", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
-    arl_sim$rl
-    
-  })
-
-plot_path <- "~/Dropbox/dissertation/gruMEWMA/revision-1/investigation-files/sim-study-investigation/"
-
-df_rl |> 
-  ggplot(aes(nf)) +
-  geom_histogram(bins = 40) +
-  facet_wrap(vars(method, phi, data), ncol = 4, scales = "free")
-
-ggsave()
-
-
-# Example bootstrap control limits.
-tmp <- 
-  1:(n_sim) |> 
-  purrr::map(\(i) {
-    
-    arl_sim <- readRDS(here("results", paste0("arl-sim-", phi,"-", data_type, "-", i, ".rds")))
-    
-  })
-
-df_h <- tmp[[1]]$h_bootstrap |> 
-  as_tibble()
-
-df_h
-
-df_h |> 
-  pivot_longer(is.double, names_transform = as_factor) |> 
-  group_by(name) |> 
-  mutate(h_mean = mean(value),
-         h_median = median(value)) |> 
-  ggplot(aes(value)) +
-  geom_histogram(bins = 20) +
-  geom_vline(aes(xintercept = h_mean), color = "red") +
-  geom_vline(aes(xintercept = h_median), color = "blue") +
-  facet_wrap(~name, scales = "free", ncol = 4)
-
-tmp[[1]]$h
 
 # Save aggregated results
 saveRDS(arl_val, file = here("results", paste0("arl-sim-", phi,"-", data_type, ".rds")))
@@ -146,7 +116,7 @@ df_arl_basic <- bind_rows(list(arl_0_lin, arl_0_ltl, arl_0_nlr, arl_0_ltm,
 df_arl <- 
   bind_cols(methods,
             df_arl_basic |> select(contains("f"))) |> 
-  mutate(across(where(is.numeric), \(x) {round(x, 2)})) |> 
+  mutate(across(contains("f"), \(x) {round(x, 2)})) |> 
   set_names(c("$\\phi$", "Data Type", "Method", "$\\lambda$",
               "$ARL_0$", "$ARL_{F1}$", "$ARL_{F2}$", "$ARL_{F3}$"))
 
