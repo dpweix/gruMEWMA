@@ -4,7 +4,7 @@ library("reticulate")
 # Custom package https://github.com/dpweix/mlewma.git
 library("mlmewma")
 
-# Load GRU functions
+# Load GRU functions (ABSOLUTE PATH!!!)
 path_py <- "~/git/mlmewma/inst/python/gru_functions.py"
 source_python(path_py)
 
