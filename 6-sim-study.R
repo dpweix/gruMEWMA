@@ -3,11 +3,11 @@ library("here")
 library("tidyverse")
 
 # Parameters for study
-data_type <- "ltm" #lin, ltl, nlr, ltm
+data_type <- "ltm" # lin, ltl, nlr, ltm
 n_sim     <- 1000  # 1000
 l         <- 2     # 2
 arl       <- 200   # 200
-phi       <- 0.8  # 0, .4, .8
+phi       <- 0.8   # 0, .4, .8
 n_ic_mod  <- 10000 # 10000
 n_ic_h    <- 10000 # 10000
 n_oc      <- 20000 # 20000
@@ -71,7 +71,7 @@ arl_val <-
     
   }) |> 
   group_by(method) |> 
-  summarise(across(where(is.numeric), \(x) trimmed_mean(x, trim = 0.10, side = "right")))
+  summarise(across(where(is.numeric), \(x) trimmed_mean(x, trim = 0.05, side = "right")))
 
 arl_val
 

@@ -11,9 +11,6 @@ library("mlmewma")
 path_py <- "~/git/mlmewma/inst/python/gru_functions.py"
 source_python(path_py)
 
-# devtools::document("~/git/mlmewma")
-# devtools::install("~/git/mlmewma")
-
 # Generate and format data
 set.seed(123)
 

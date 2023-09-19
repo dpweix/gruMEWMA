@@ -82,7 +82,7 @@ gen_sim_study_brk <- function(data_type = "lin",
         nf = predict_fd(x, dat$none[id_tst, ], pstat0 = last(y$pstat)),
         f1 = predict_fd(x, dat$f1[id_tst, ], pstat0 = last(y$pstat)),
         f2 = predict_fd(x, dat$f2[id_tst, ], pstat0 = last(y$pstat)),
-        f3 = predict_fd(x, dat$f3[id_tst, ], pstat0 = last(y$pstat)) # last(y$pstat)
+        f3 = predict_fd(x, dat$f3[id_tst, ], pstat0 = last(y$pstat))
       )
     })
   
