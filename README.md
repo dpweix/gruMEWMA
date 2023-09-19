@@ -8,20 +8,22 @@ Statistical Approaches*.
 
 First install the `mlmewma` package from
 https://github.com/dpweix/mlmewma.git. The gated recurrent unit (GRU) is
-run using the Tensorflow software in python. This code can be found in
-the downloaded `R` package at `mlmewma/inst/python/gru_functions.py`.
+run using the `TensorFlow` software in `Python`. This code can be found
+in the downloaded `R` package at `mlmewma/inst/python/gru_functions.py`.
 Whenever the `path_py` variable is included in a file, it is important
-that the absolute file path is provided. Otherwise the python code
+that the **absolute file path** is provided. Otherwise the python code
 cannot be found by the package.
 
-Once the path is determined use `source_python` from the `reticulate`
+Once the path is determined, use `source_python` from the `reticulate`
 package to load in all required python functions for the `mlmewma`
-package.
+package. Note that `TensorFlow` must be installed on the `Python`
+instance toward which `reticulate` points.
 
 Additionally, these files make use of `here` package to avoid needed
-absolute pathing for file locations. In order for the `here` package to
-work, please open this repository as an R project. Alternatively,
-absolute pathing may be added to each file for a specific user.
+absolute pathing for file locations, aside from `gru_functions.py`. In
+order for the `here` package to work, please open this repository as an
+`R` project. Alternatively, absolute pathing may be added to each file
+for a specific user.
 
 ``` r
 library("reticulate")
@@ -36,11 +38,9 @@ source_python(path_py)
 ## File Descriptions
 
 <table>
-<caption>Description of files used to recreate results in
-paper.</caption>
 <colgroup>
-<col style="width: 11%" />
-<col style="width: 88%" />
+<col style="width: 9%" />
+<col style="width: 90%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -50,40 +50,48 @@ paper.</caption>
 </thead>
 <tbody>
 <tr class="odd">
+<td>0-test-methods.R</td>
+<td>This short script can be used to confirm that the
+<code>mlmewma</code> package has been properly installed and the path to
+the <code>Python</code> file is correct.</td>
+</tr>
+<tr class="even">
 <td>1-case-study-data.R</td>
-<td>Read/clean data from the case study. Save data as .rds files and
-creates the breaks of training data (model), training data (estimate
-<em>h</em>), and testing data.</td>
+<td>This script reads and cleans the data from the case study. The
+resulting clean data can be saved as .rds files. Additionally, the
+breaks seperating the training data (model), training data (estimate
+<em>h</em>), and testing data, are defined here.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>2-case-study-apply-methods.R</td>
-<td>Fit models and apply methods on the data cleaned in file 1. Saves
-the resulting model predictions, plotting statistics, and control
-limits.</td>
+<td>This script fits the models and applies the methods to the data
+cleaned in file 1. The resulting model predictions, plotting statistics,
+and control limits can be saved.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>3-case-study-figures.R</td>
-<td>Create all figures used in the paper. Dependent on having run files
-1 and 2.</td>
-</tr>
-<tr class="even">
-<td>4-broken-methods.R</td>
-<td>Contains the function <code>gen_sim_study_brk</code>. This function
-runs the entire simulation study based on a choice of data structure.
-The return values for this function are plotting statistic, run length,
-and control limit for each method type.</td>
+<td>This script creates all figures concering the case study used in the
+paper. This file depends on the output from scripts 1 and 2.</td>
 </tr>
 <tr class="odd">
-<td>5-arl-study.R</td>
-<td>This file imports <code>gen_sim_study_brk</code> and runs a single
-simulation with the chosen settings (usually imported from file 6). Then
-the resulting run length and control limit are saved in a .rds file in
-the results folder.</td>
+<td>4-broken-methods.R</td>
+<td>Do not run this script. This script only contains the function
+<code>gen_sim_study_brk</code>. This function runs the entire simulation
+study based on a choice of data structure. The return values for this
+function are the plotting statistic, run length, and control limit for
+each method type.</td>
 </tr>
 <tr class="even">
+<td>5-arl-study.R</td>
+<td>Do not run this script. This script imports
+<code>gen_sim_study_brk</code> and runs a single simulation with the
+chosen settings. The resulting run length and control limit are saved in
+a .rds file in the results folder.</td>
+</tr>
+<tr class="odd">
 <td>6-sim-study.R</td>
-<td>This file is used to run the simulation study (neither file 4 or 5
-need to be run). All simulation settings are chosen and file 5 is
+<td>This script runs the simulation study under conditions chosen at the
+top of the file. After the simulation settings are chosen, file 5 is
 repeatedly submitted as an Rstudio background job to encourage parallel
 running of the simulations.<br />
 <br />
@@ -91,25 +99,24 @@ Once all files are saved for each data generation structure the ARL
 tables can be loaded in as data frames, and converted to LaTeX
 tables.</td>
 </tr>
-<tr class="odd">
-<td>7-visualize-study.R</td>
-<td>This file provides time series plots for all the different data
-generation structures and their respective faults.</td>
-</tr>
 <tr class="even">
+<td>7-visualize-study.R</td>
+<td>This script produces time series plots and run length histograms for
+all the different data generation structures and their respective
+faults.</td>
+</tr>
+<tr class="odd">
 <td>8-visualize-study-3D.R</td>
-<td>This file generates 3D scatter plots for all the different data
+<td>This script generates 3D scatter plots for all the different data
 generation structures and their respective faults.</td>
 </tr>
 </tbody>
 </table>
 
-Description of files used to recreate results in paper.
-
 ## How to use this repository
 
 This repository can be used to recreate the results in the paper, or as
 a general guide for how to use the `mlmewma` package. This package is
-meant for use in fault detection on the covariance of multivariate time
-series data, particularly data with non-linear relationships between
-variables.
+meant for multivariate statistical process monitoring of the covariance
+of multivariate time series data, particularly data with non-linear
+relationships between variables.
