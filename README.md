@@ -4,14 +4,18 @@
 
 The repository is meant as an accompaniment to the paper *Monitoring
 Covariance in Multivariate Time Series: Comparing Machine Learning and
-Statistical Approaches*.
+Statistical Approaches*. For those only interested the data,
+`bw30-navano-raw-data.xlsx` is the original excel file in which the data
+are stored and `bw30-navano-clean-data.csv` is a `.csv` file that
+contains all data relevant for analysis in a standard format. The
+following `R` scripts only depend on `bw30-navano-raw-data.xlsx` .
 
-First install the `mlmewma` package from
+To run the following scripts, first install the `mlmewma` package from
 https://github.com/dpweix/mlmewma.git. The gated recurrent unit (GRU) is
 run using the `TensorFlow` software in `Python`. This code can be found
 in the downloaded `R` package at `mlmewma/inst/python/gru_functions.py`.
 Whenever the `path_py` variable is included in a file, it is important
-that the **absolute file path** is provided. Otherwise the python code
+that the **absolute file path** is provided. Otherwise, the Python code
 cannot be found by the package.
 
 Once the path is determined, use `source_python` from the `reticulate`
@@ -19,11 +23,11 @@ package to load in all required python functions for the `mlmewma`
 package. Note that `TensorFlow` must be installed on the `Python`
 instance toward which `reticulate` points.
 
-Additionally, these files make use of `here` package to avoid needed
-absolute pathing for file locations, aside from `gru_functions.py`. In
-order for the `here` package to work, please open this repository as an
-`R` project. Alternatively, absolute pathing may be added to each file
-for a specific user.
+Additionally, these files make use of the `here` package to avoid
+needing absolute pathing for file locations, aside from
+`gru_functions.py`. In order for the `here` package to work, please open
+this repository as an `R` project. Alternatively, absolute pathing may
+be added to each file for a specific user.
 
 ``` r
 library("reticulate")
@@ -58,9 +62,9 @@ the <code>Python</code> file is correct.</td>
 <tr class="even">
 <td>1-case-study-data.R</td>
 <td>This script reads and cleans the data from the case study. The
-resulting clean data can be saved as .rds files. Additionally, the
-breaks seperating the training data (model), training data (estimate
-<em>h</em>), and testing data, are defined here.</td>
+resulting clean data are saved as .rds files. Additionally, the breaks
+separating the training data (model), training data (estimate
+<em>h</em>), and testing data are defined here.</td>
 </tr>
 <tr class="odd">
 <td>2-case-study-apply-methods.R</td>
@@ -70,8 +74,8 @@ and control limits can be saved.</td>
 </tr>
 <tr class="even">
 <td>3-case-study-figures.R</td>
-<td>This script creates all figures concering the case study used in the
-paper. This file depends on the output from scripts 1 and 2.</td>
+<td>This script creates all figures concerning the case study used in
+the paper. This file depends on the output from scripts 1 and 2.</td>
 </tr>
 <tr class="odd">
 <td>4-broken-methods.R</td>
@@ -95,8 +99,8 @@ top of the file. After the simulation settings are chosen, file 5 is
 repeatedly submitted as an Rstudio background job to encourage parallel
 running of the simulations.<br />
 <br />
-Once all files are saved for each data generation structure the ARL
-tables can be loaded in as data frames, and converted to LaTeX
+Once all files are saved for each data generation structure, the ARL
+tables can be loaded in as data frames and converted to LaTeX
 tables.</td>
 </tr>
 <tr class="even">
@@ -115,8 +119,8 @@ generation structures and their respective faults.</td>
 
 ## How to use this repository
 
-This repository can be used to recreate the results in the paper, or as
-a general guide for how to use the `mlmewma` package. This package is
+This repository can be used to recreate the results in the paper or as a
+general guide for how to use the `mlmewma` package. This package is
 meant for multivariate statistical process monitoring of the covariance
-of multivariate time series data, particularly data with non-linear
-relationships between variables.
+of multivariate time series data, particularly autocorrelated data with
+non-linear relationships between variables.
