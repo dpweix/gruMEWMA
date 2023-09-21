@@ -5,7 +5,7 @@ library("lubridate")
 
 ### Read excel file -----------------------------------------------------------
 dat_raw <- 
-  read_excel(here("data", "BW30_Navajo_DataAnalysis_Exp1(Take 3)_good.xlsx"),
+  read_excel(here("data", "bw30-navajo-raw-data.xlsx"),
              sheet = "Exp1",
              range = "A2:AF68373")
 
