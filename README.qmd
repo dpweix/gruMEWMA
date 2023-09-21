@@ -5,7 +5,9 @@ format: gfm
 
 ## Set Up
 
-The repository is meant as an accompaniment to the paper *Monitoring Covariance in Multivariate Time Series: Comparing Machine Learning and Statistical Approaches*. For those only interested the data, `bw30-navano-raw-data.xlsx` is the original excel file in which the data are stored and `bw30-navano-clean-data.csv` is a `.csv` file that contains all data relevant for analysis in a standard format. The following `R` scripts only depend on `bw30-navano-raw-data.xlsx` .
+The repository is meant as an accompaniment to the paper *Monitoring Covariance in Multivariate Time Series: Comparing Machine Learning and Statistical Approaches*.
+
+The original excel data file is `bw30-navajo-raw-data.xlsx`. The `bw30-navajo.csv` and `bw30-navajo.rds` files contain cleaned version of the data. The `.csv` file can be used for analysis in any programming language, whereas the `.rds` file includes additional formatting and can only be used in `R`. Our analysis is based on the `bw30-navajo.rds` file. Both `bw30-navajo.csv` and `bw30-navajo.rds` are created from `bw30-navajo-raw-data.xlsx` in the first section of the `1-case-study-data.R` script.
 
 To run the following scripts, first install the `mlmewma` package from https://github.com/dpweix/mlmewma.git. The gated recurrent unit (GRU) is run using the `TensorFlow` software in `Python`. This code can be found in the downloaded `R` package at `mlmewma/inst/python/gru_functions.py`. Whenever the `path_py` variable is included in a file, it is important that the **absolute file path** is provided. Otherwise, the Python code cannot be found by the package.
 

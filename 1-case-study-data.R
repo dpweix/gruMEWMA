@@ -22,7 +22,7 @@ dat <-
   mutate(across(where(is.character), as_factor))
 
 saveRDS(dat, file = here("data", "bw30-navajo.rds"))
-write_csv(dat, file = here("data", "bw30-navajo-clean-data.csv"))
+write_csv(dat, file = here("data", "bw30-navajo.csv"))
 
 
 ### Split data for application ------------------------------------------------
