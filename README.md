@@ -19,7 +19,7 @@ that the **absolute file path** is provided. Otherwise, the Python code
 cannot be found by the package.
 
 Once the path is determined, use `source_python` from the `reticulate`
-package to load in all required python functions for the `mlmewma`
+package to load in all required `Python` functions for the `mlmewma`
 package. Note that `TensorFlow` must be installed on the `Python`
 instance toward which `reticulate` points.
 

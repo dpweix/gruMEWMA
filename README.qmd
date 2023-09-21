@@ -9,7 +9,7 @@ The repository is meant as an accompaniment to the paper *Monitoring Covariance 
 
 To run the following scripts, first install the `mlmewma` package from https://github.com/dpweix/mlmewma.git. The gated recurrent unit (GRU) is run using the `TensorFlow` software in `Python`. This code can be found in the downloaded `R` package at `mlmewma/inst/python/gru_functions.py`. Whenever the `path_py` variable is included in a file, it is important that the **absolute file path** is provided. Otherwise, the Python code cannot be found by the package.
 
-Once the path is determined, use `source_python` from the `reticulate` package to load in all required python functions for the `mlmewma` package. Note that `TensorFlow` must be installed on the `Python` instance toward which `reticulate` points.
+Once the path is determined, use `source_python` from the `reticulate` package to load in all required `Python` functions for the `mlmewma` package. Note that `TensorFlow` must be installed on the `Python` instance toward which `reticulate` points.
 
 Additionally, these files make use of the `here` package to avoid needing absolute pathing for file locations, aside from `gru_functions.py`. In order for the `here` package to work, please open this repository as an `R` project. Alternatively, absolute pathing may be added to each file for a specific user.
 
